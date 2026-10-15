@@ -7,80 +7,85 @@
              x:DataType="vm:ChatViewModel"
              Title="Consultar IA">
     <!-- La vista solo enlaza propiedades y comandos; no hace solicitudes HTTP. -->
-    <Grid Padding="20,12" RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" RowSpacing="10">
+    <ScrollView>
+        <VerticalStackLayout Padding="20,12" Spacing="10">
 
-        <Label Text="Asistente académico de IA" Style="{StaticResource PageTitle}" />
+            <Label Text="Asistente académico de IA" Style="{StaticResource PageTitle}" />
 
-        <!-- Plantilla y categoría -->
-        <Grid Grid.Row="1" ColumnDefinitions="*,*,Auto" ColumnSpacing="10">
-            <Picker Title="Plantilla" AutomationId="ChatTemplatePicker"
-                    SemanticProperties.Description="Plantilla de prompt"
-                    ItemsSource="{Binding Templates}"
-                    ItemDisplayBinding="{Binding Name, x:DataType=models:PromptTemplate}"
-                    SelectedItem="{Binding SelectedTemplate}" />
-            <Picker Grid.Column="1" Title="Categoría" AutomationId="ChatCategoryPicker"
-                    SemanticProperties.Description="Categoría de la consulta"
-                    ItemsSource="{Binding CategoryOptions}"
-                    SelectedItem="{Binding SelectedCategory}" />
-            <Button Grid.Column="2" Text="Plantillas" Style="{StaticResource SecondaryButton}"
-                    AutomationId="ChatEditTemplates" Command="{Binding EditTemplatesCommand}"
-                    SemanticProperties.Hint="Abre el editor de plantillas" />
-        </Grid>
+            <!-- Plantilla y categoría: FlexLayout pasa a varias filas en pantallas angostas -->
+            <FlexLayout Wrap="Wrap" AlignItems="End" Margin="-5,0">
+                <Picker Title="Plantilla" AutomationId="ChatTemplatePicker" Margin="5,0,5,8"
+                        FlexLayout.Basis="200" FlexLayout.Grow="1"
+                        SemanticProperties.Description="Plantilla de prompt"
+                        ItemsSource="{Binding Templates}"
+                        ItemDisplayBinding="{Binding Name, x:DataType=models:PromptTemplate}"
+                        SelectedItem="{Binding SelectedTemplate}" />
+                <Picker Title="Categoría" AutomationId="ChatCategoryPicker" Margin="5,0,5,8"
+                        FlexLayout.Basis="200" FlexLayout.Grow="1"
+                        SemanticProperties.Description="Categoría de la consulta"
+                        ItemsSource="{Binding CategoryOptions}"
+                        SelectedItem="{Binding SelectedCategory}" />
+                <Button Text="Editar plantillas" Style="{StaticResource SecondaryButton}" Margin="5,0,5,8"
+                        FlexLayout.Basis="150" FlexLayout.Grow="0"
+                        AutomationId="ChatEditTemplates" Command="{Binding EditTemplatesCommand}"
+                        SemanticProperties.Hint="Abre el editor de plantillas" />
+            </FlexLayout>
 
-        <!-- Prompt -->
-        <VerticalStackLayout Grid.Row="2" Spacing="2">
-            <Editor Text="{Binding Prompt}" AutomationId="ChatPromptEditor"
-                    Placeholder="Escriba una consulta académica (5 a 2000 caracteres)"
-                    SemanticProperties.Description="Consulta para la inteligencia artificial"
-                    AutoSize="TextChanges" MinimumHeightRequest="90" MaximumHeightRequest="180" />
-            <Grid ColumnDefinitions="*,Auto">
-                <Label Style="{StaticResource Caption}" FontSize="12"
-                       Text="No incluya datos personales, contraseñas ni información confidencial." />
-                <Label Grid.Column="1" Style="{StaticResource Caption}" FontSize="12"
-                       Text="{Binding CharCountText}" AutomationId="ChatCharCount" />
+            <!-- Prompt -->
+            <VerticalStackLayout Spacing="2">
+                <Editor Text="{Binding Prompt}" AutomationId="ChatPromptEditor"
+                        Placeholder="Escriba una consulta académica (5 a 2000 caracteres)"
+                        SemanticProperties.Description="Consulta para la inteligencia artificial"
+                        AutoSize="TextChanges" MinimumHeightRequest="90" MaximumHeightRequest="180" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Label Style="{StaticResource Caption}" FontSize="12"
+                           Text="No incluya datos personales, contraseñas ni información confidencial." />
+                    <Label Grid.Column="1" Style="{StaticResource Caption}" FontSize="12"
+                           Text="{Binding CharCountText}" AutomationId="ChatCharCount" />
+                </Grid>
+            </VerticalStackLayout>
+
+            <!-- Acciones: dos o cuatro botones por fila según el ancho disponible -->
+            <FlexLayout Wrap="Wrap" Margin="-4,0">
+                <Button Text="Consultar" Command="{Binding AskCommand}" AutomationId="ChatAskButton"
+                        Margin="4" FlexLayout.Basis="130" FlexLayout.Grow="1"
+                        SemanticProperties.Hint="Envía la consulta al servicio de IA" />
+                <Button Text="Cancelar" Command="{Binding CancelCommand}"
+                        Margin="4" FlexLayout.Basis="130" FlexLayout.Grow="1"
+                        Style="{StaticResource DangerButton}" AutomationId="ChatCancelButton"
+                        SemanticProperties.Hint="Cancela la consulta en curso" />
+                <Button Text="Guardar" Command="{Binding SaveCommand}"
+                        Margin="4" FlexLayout.Basis="130" FlexLayout.Grow="1"
+                        Style="{StaticResource SecondaryButton}" AutomationId="ChatSaveButton"
+                        SemanticProperties.Hint="Guarda la consulta y la respuesta en el historial" />
+                <Button Text="Limpiar" Command="{Binding ClearCommand}"
+                        Margin="4" FlexLayout.Basis="130" FlexLayout.Grow="1"
+                        Style="{StaticResource SecondaryButton}" AutomationId="ChatClearButton" />
+            </FlexLayout>
+
+            <!-- Estado (junto a los botones para que se vea en cualquier tamaño) -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                                   HeightRequest="24" WidthRequest="24" AutomationId="ChatBusyIndicator" />
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="{Binding StatusMessage}" FontSize="13" LineBreakMode="WordWrap"
+                           TextColor="{Binding IsError, Converter={StaticResource StatusColor}}"
+                           AutomationId="ChatStatusLabel" />
+                    <Label Text="{Binding ModelName, StringFormat='Modelo: {0}'}" Style="{StaticResource Caption}" FontSize="11" />
+                </VerticalStackLayout>
             </Grid>
-        </VerticalStackLayout>
 
-        <!-- Acciones -->
-        <Grid Grid.Row="3" ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
-            <Button Text="Consultar" Command="{Binding AskCommand}" AutomationId="ChatAskButton"
-                    SemanticProperties.Hint="Envía la consulta al servicio de IA" />
-            <Button Grid.Column="1" Text="Cancelar" Command="{Binding CancelCommand}"
-                    Style="{StaticResource DangerButton}" AutomationId="ChatCancelButton"
-                    SemanticProperties.Hint="Cancela la consulta en curso" />
-            <Button Grid.Column="2" Text="Guardar" Command="{Binding SaveCommand}"
-                    Style="{StaticResource SecondaryButton}" AutomationId="ChatSaveButton"
-                    SemanticProperties.Hint="Guarda la consulta y la respuesta en el historial" />
-            <Button Grid.Column="3" Text="Limpiar" Command="{Binding ClearCommand}"
-                    Style="{StaticResource SecondaryButton}" AutomationId="ChatClearButton" />
-        </Grid>
-
-        <!-- Respuesta -->
-        <Border Grid.Row="4" Style="{StaticResource Card}">
-            <ScrollView>
+            <!-- Respuesta -->
+            <Border Style="{StaticResource Card}" MinimumHeightRequest="220">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Respuesta" Style="{StaticResource SectionTitle}" />
-                    <Label Text="{Binding Answer}" LineBreakMode="WordWrap" AutomationId="ChatAnswerLabel"
-                           SemanticProperties.Description="Respuesta de la inteligencia artificial" />
+                    <Label Text="{Binding Answer}" LineBreakMode="WordWrap" AutomationId="ChatAnswerLabel" />
                     <Border Style="{StaticResource WarningCard}" IsVisible="{Binding HasAnswer}">
                         <Label Style="{StaticResource WarningLabel}"
                                Text="Respuesta generada por IA: puede contener errores. Contrástela con fuentes confiables antes de usarla." />
                     </Border>
                 </VerticalStackLayout>
-            </ScrollView>
-        </Border>
-
-        <!-- Estado -->
-        <Grid Grid.Row="5" ColumnDefinitions="Auto,*" ColumnSpacing="8">
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
-                               HeightRequest="24" WidthRequest="24" AutomationId="ChatBusyIndicator" />
-            <VerticalStackLayout Grid.Column="1">
-                <Label Text="{Binding StatusMessage}" FontSize="13" LineBreakMode="WordWrap"
-                       TextColor="{Binding IsError, Converter={StaticResource StatusColor}}"
-                       AutomationId="ChatStatusLabel"
-                       SemanticProperties.Description="Estado de la consulta" />
-                <Label Text="{Binding ModelName, StringFormat='Modelo: {0}'}" Style="{StaticResource Caption}" FontSize="11" />
-            </VerticalStackLayout>
-        </Grid>
-    </Grid>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

@@ -11,13 +11,15 @@
 
         <Label Text="Historial de consultas" Style="{StaticResource PageTitle}" />
 
-        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+        <FlexLayout Grid.Row="1" Wrap="Wrap" AlignItems="Center" Margin="-5,0">
             <SearchBar Placeholder="Buscar en preguntas y respuestas" Text="{Binding SearchText}"
+                       Margin="5,0,5,6" FlexLayout.Basis="260" FlexLayout.Grow="1"
                        AutomationId="HistorySearch" SemanticProperties.Description="Buscar en el historial" />
-            <Picker Grid.Column="1" Title="Categoría" WidthRequest="170" AutomationId="HistoryCategoryFilter"
+            <Picker Title="Categoría" Margin="5,0,5,6" FlexLayout.Basis="170" FlexLayout.Grow="0"
+                    AutomationId="HistoryCategoryFilter"
                     ItemsSource="{Binding CategoryFilters}" SelectedItem="{Binding SelectedCategory}"
                     SemanticProperties.Description="Filtrar por categoría" />
-        </Grid>
+        </FlexLayout>
 
         <Label Grid.Row="2" Text="{Binding Summary}" Style="{StaticResource Caption}" AutomationId="HistorySummary" />
 

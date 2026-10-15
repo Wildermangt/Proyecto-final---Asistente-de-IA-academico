@@ -6,14 +6,15 @@
              xmlns:models="clr-namespace:AsistenteIA.Models"
              x:DataType="vm:TemplatesViewModel"
              Title="Plantillas">
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="14" MaximumWidthRequest="900">
-            <Label Text="Plantillas de prompts" Style="{StaticResource PageTitle}" />
-            <Label Style="{StaticResource Caption}" LineBreakMode="WordWrap"
-                   Text="Seleccione una plantilla para editarla. Use {consulta} donde debe ir el texto que escribe el usuario." />
+    <!-- La lista ocupa el espacio libre y tiene su propio desplazamiento; el formulario queda siempre visible. -->
+    <Grid Padding="20,12" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="10">
+        <Label Text="Plantillas de prompts" Style="{StaticResource PageTitle}" />
+        <Label Grid.Row="1" Style="{StaticResource Caption}" LineBreakMode="WordWrap"
+               Text="Seleccione una plantilla para editarla. Use {consulta} donde debe ir el texto que escribe el usuario." />
 
+        <Border Grid.Row="2" Style="{StaticResource Card}" Padding="4">
             <CollectionView ItemsSource="{Binding Templates}" SelectionMode="Single" AutomationId="TemplatesList"
-                            SelectedItem="{Binding SelectedTemplate}" MaximumHeightRequest="260">
+                            SelectedItem="{Binding SelectedTemplate}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:PromptTemplate">
                         <Grid Padding="10,8" ColumnDefinitions="*,Auto">
@@ -23,27 +24,32 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+        </Border>
 
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="{Binding FormTitle}" Style="{StaticResource SectionTitle}" AutomationId="TemplatesFormTitle" />
+        <Border Grid.Row="3" Style="{StaticResource Card}">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="{Binding FormTitle}" Style="{StaticResource SectionTitle}" AutomationId="TemplatesFormTitle" />
+                <FlexLayout Wrap="Wrap" Margin="-5,0">
                     <Entry Placeholder="Nombre" Text="{Binding EditName}" AutomationId="TemplatesNameEntry"
+                           Margin="5,0,5,6" FlexLayout.Basis="220" FlexLayout.Grow="1"
                            SemanticProperties.Description="Nombre de la plantilla" />
                     <Picker Title="Categoría" ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding EditCategory}"
+                            Margin="5,0,5,6" FlexLayout.Basis="180" FlexLayout.Grow="1"
                             AutomationId="TemplatesCategoryPicker" />
-                    <Editor Placeholder="Texto de la plantilla con {consulta}" Text="{Binding EditText}"
-                            AutoSize="TextChanges" MinimumHeightRequest="90" AutomationId="TemplatesTextEditor"
-                            SemanticProperties.Description="Texto de la plantilla" />
-                    <FlexLayout Wrap="Wrap">
-                        <Button Text="Guardar" Margin="0,0,10,10" Command="{Binding SaveCommand}" AutomationId="TemplatesSave" />
-                        <Button Text="Nueva" Margin="0,0,10,10" Style="{StaticResource SecondaryButton}"
-                                Command="{Binding NewCommand}" AutomationId="TemplatesNew" />
-                        <Button Text="Eliminar" Margin="0,0,10,10" Style="{StaticResource DangerButton}"
-                                Command="{Binding DeleteCommand}" AutomationId="TemplatesDelete" />
-                    </FlexLayout>
-                    <Label Text="{Binding StatusMessage}" Style="{StaticResource Caption}" AutomationId="TemplatesStatus" />
-                </VerticalStackLayout>
-            </Border>
-        </VerticalStackLayout>
-    </ScrollView>
+                </FlexLayout>
+                <Editor Placeholder="Texto de la plantilla con {consulta}" Text="{Binding EditText}"
+                        AutoSize="TextChanges" MinimumHeightRequest="70" MaximumHeightRequest="140"
+                        AutomationId="TemplatesTextEditor" SemanticProperties.Description="Texto de la plantilla" />
+                <FlexLayout Wrap="Wrap" AlignItems="Center">
+                    <Button Text="Guardar" Margin="0,0,10,6" Command="{Binding SaveCommand}" AutomationId="TemplatesSave" />
+                    <Button Text="Nueva" Margin="0,0,10,6" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding NewCommand}" AutomationId="TemplatesNew" />
+                    <Button Text="Eliminar" Margin="0,0,10,6" Style="{StaticResource DangerButton}"
+                            Command="{Binding DeleteCommand}" AutomationId="TemplatesDelete" />
+                    <Label Text="{Binding StatusMessage}" Style="{StaticResource Caption}" AutomationId="TemplatesStatus"
+                           VerticalOptions="Center" />
+                </FlexLayout>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
 </ContentPage>
