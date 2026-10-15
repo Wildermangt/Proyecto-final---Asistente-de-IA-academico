@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="AsistenteIA.Views.SettingsPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:AsistenteIA.ViewModels"
+             x:DataType="vm:SettingsViewModel"
+             Title="Configuración">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="14" MaximumWidthRequest="900">
+
+            <Label Text="Configuración y acerca de" Style="{StaticResource PageTitle}" />
+
+            <Border Style="{StaticResource WarningCard}">
+                <Label Style="{StaticResource WarningLabel}" FontAttributes="Bold"
+                       Text="Aviso: no ingrese datos personales, contraseñas, información confidencial ni documentos institucionales sensibles en las consultas." />
+            </Border>
+
+            <!-- Clave de la API -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Clave de la API (Pollinations)" Style="{StaticResource SectionTitle}" />
+                    <Label Text="{Binding MaskedKey}" AutomationId="SettingsMaskedKey" />
+                    <Entry IsPassword="True" Text="{Binding ApiKeyInput}" Placeholder="Pegue aquí su clave"
+                           AutomationId="SettingsKeyEntry" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False"
+                           SemanticProperties.Description="Clave de la API, se oculta al escribir" />
+                    <Label Style="{StaticResource Caption}" LineBreakMode="WordWrap"
+                           Text="La clave se guarda cifrada con SecureStorage del sistema operativo. Nunca se muestra completa, no se registra en consola y no se incluye en el código ni en el repositorio." />
+                    <FlexLayout Wrap="Wrap">
+                        <Button Text="Guardar clave" Margin="0,0,10,10" AutomationId="SettingsSaveKey"
+                                Command="{Binding SaveKeyCommand}" />
+                        <Button Text="Probar conexión" Margin="0,0,10,10" AutomationId="SettingsTestConnection"
+                                Style="{StaticResource SecondaryButton}" Command="{Binding TestConnectionCommand}" />
+                        <Button Text="Eliminar clave" Margin="0,0,10,10" AutomationId="SettingsDeleteKey"
+                                Style="{StaticResource DangerButton}" Command="{Binding DeleteKeyCommand}" />
+                    </FlexLayout>
+                    <HorizontalStackLayout Spacing="8">
+                        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HeightRequest="22" />
+                        <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" FontSize="13"
+                               TextColor="{Binding IsError, Converter={StaticResource StatusColor}}"
+                               AutomationId="SettingsStatus" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Modelo -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Modelo y conexión" Style="{StaticResource SectionTitle}" />
+                    <Picker Title="Modelo de IA" ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}"
+                            AutomationId="SettingsModelPicker" SemanticProperties.Description="Modelo de inteligencia artificial" />
+                    <Label Style="{StaticResource Caption}" LineBreakMode="WordWrap"
+                           Text="La lista se obtiene del catálogo público del proveedor (GET /v1/models) y muestra solo modelos de texto gratuitos." />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <Label Text="Tiempo máximo de espera (segundos)" VerticalOptions="Center" />
+                        <Entry Grid.Column="1" WidthRequest="90" Keyboard="Numeric" AutomationId="SettingsTimeoutEntry"
+                               Text="{Binding TimeoutSeconds}" SemanticProperties.Description="Tiempo máximo de espera en segundos" />
+                    </Grid>
+                    <Label Text="Endpoint: POST https://gen.pollinations.ai/v1/chat/completions" Style="{StaticResource Caption}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Acerca de (RF09) -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Acerca de AsistenteIA" Style="{StaticResource SectionTitle}" AutomationId="SettingsAbout" />
+                    <Label LineBreakMode="WordWrap"><Label.FormattedText><FormattedString>
+                        <Span Text="Finalidad: " FontAttributes="Bold" />
+                        <Span Text="apoyar el estudio con explicaciones, resúmenes y preguntas de repaso generadas por IA, con fines exclusivamente académicos." />
+                    </FormattedString></Label.FormattedText></Label>
+                    <Label LineBreakMode="WordWrap"><Label.FormattedText><FormattedString>
+                        <Span Text="Autoría: " FontAttributes="Bold" />
+                        <Span Text="Jeferson Wilderman González Tenjo y equipo. Programación Avanzada y Aplicada, VI semestre, Tecnología en Desarrollo de Software, Universidad de San Buenaventura. Docente: Mg. Sandra Esperanza Sánchez Barragán." />
+                    </FormattedString></Label.FormattedText></Label>
+                    <Label LineBreakMode="WordWrap"><Label.FormattedText><FormattedString>
+                        <Span Text="Proveedor y fuentes: " FontAttributes="Bold" />
+                        <Span Text="API de Pollinations (gen.pollinations.ai), compatible con Chat Completions. Documentación de Microsoft Learn sobre .NET MAUI, inyección de dependencias y HttpClient." />
+                    </FormattedString></Label.FormattedText></Label>
+                    <Label LineBreakMode="WordWrap"><Label.FormattedText><FormattedString>
+                        <Span Text="Privacidad: " FontAttributes="Bold" />
+                        <Span Text="las consultas se envían al proveedor externo para generar la respuesta. El historial se guarda solo en este dispositivo (SQLite) y la clave en almacenamiento seguro. No se recopilan datos personales." />
+                    </FormattedString></Label.FormattedText></Label>
+                    <Label LineBreakMode="WordWrap"><Label.FormattedText><FormattedString>
+                        <Span Text="Limitaciones: " FontAttributes="Bold" />
+                        <Span Text="la IA puede producir respuestas incorrectas, desactualizadas o inventadas y no es una autoridad. Verifique siempre la información. El servicio depende de la conexión, de la disponibilidad del proveedor y del saldo de la clave." />
+                    </FormattedString></Label.FormattedText></Label>
+                    <Label Text="{Binding AppVersion}" Style="{StaticResource Caption}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="AsistenteIA.Views.DetailPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:AsistenteIA.ViewModels"
+             x:DataType="vm:DetailViewModel"
+             Title="Detalle">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="14" MaximumWidthRequest="900">
+
+            <Label Text="Detalle de la conversación" Style="{StaticResource PageTitle}" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10" RowDefinitions="Auto,Auto">
+                <Label Text="Fecha" Style="{StaticResource Caption}" />
+                <Label Grid.Row="1" Text="{Binding Record.CreatedAtLocal}" AutomationId="DetailDate" />
+                <Label Grid.Column="1" Text="Modelo" Style="{StaticResource Caption}" />
+                <Label Grid.Column="1" Grid.Row="1" Text="{Binding Record.Model}" />
+            </Grid>
+
+            <Picker Title="Categoría" AutomationId="DetailCategoryPicker"
+                    ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding SelectedCategory}"
+                    SemanticProperties.Description="Categoría de la conversación" />
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Prompt enviado" Style="{StaticResource SectionTitle}" />
+                    <Label Text="{Binding Record.Prompt}" LineBreakMode="WordWrap" AutomationId="DetailPrompt" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Respuesta" Style="{StaticResource SectionTitle}" />
+                    <Label Text="{Binding Record.Answer}" LineBreakMode="WordWrap" AutomationId="DetailAnswer" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource WarningCard}">
+                <Label Text="{Binding VerificationText}" Style="{StaticResource WarningLabel}"
+                       AutomationId="DetailVerification" />
+            </Border>
+
+            <FlexLayout Wrap="Wrap">
+                <Button Text="{Binding VerifyButtonText}" Margin="0,0,10,10" AutomationId="DetailVerifyButton"
+                        Command="{Binding ToggleVerifiedCommand}"
+                        SemanticProperties.Hint="Marca la respuesta como contrastada con fuentes confiables" />
+                <Button Text="Copiar respuesta" Margin="0,0,10,10" Style="{StaticResource SecondaryButton}"
+                        AutomationId="DetailCopyButton" Command="{Binding CopyCommand}" />
+                <Button Text="Eliminar" Margin="0,0,10,10" Style="{StaticResource DangerButton}"
+                        AutomationId="DetailDeleteButton" Command="{Binding DeleteCommand}" />
+            </FlexLayout>
+
+            <Label Text="{Binding StatusMessage}" Style="{StaticResource Caption}" AutomationId="DetailStatus" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

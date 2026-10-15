@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="AsistenteIA.Views.HistoryPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:AsistenteIA.ViewModels"
+             xmlns:models="clr-namespace:AsistenteIA.Models"
+             x:DataType="vm:HistoryViewModel"
+             x:Name="Page"
+             Title="Historial">
+    <Grid Padding="20,12" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10">
+
+        <Label Text="Historial de consultas" Style="{StaticResource PageTitle}" />
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <SearchBar Placeholder="Buscar en preguntas y respuestas" Text="{Binding SearchText}"
+                       AutomationId="HistorySearch" SemanticProperties.Description="Buscar en el historial" />
+            <Picker Grid.Column="1" Title="Categoría" WidthRequest="170" AutomationId="HistoryCategoryFilter"
+                    ItemsSource="{Binding CategoryFilters}" SelectedItem="{Binding SelectedCategory}"
+                    SemanticProperties.Description="Filtrar por categoría" />
+        </Grid>
+
+        <Label Grid.Row="2" Text="{Binding Summary}" Style="{StaticResource Caption}" AutomationId="HistorySummary" />
+
+        <CollectionView Grid.Row="3" ItemsSource="{Binding Records}" SelectionMode="None" AutomationId="HistoryList">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="20" Spacing="6">
+                    <Label Text="No hay conversaciones guardadas." FontSize="16" HorizontalTextAlignment="Center" />
+                    <Label Text="Realice una consulta y pulse Guardar para verla aquí." Style="{StaticResource Caption}"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:ConversationRecord">
+                    <Border Style="{StaticResource Card}" Padding="12">
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto">
+                            <Label Text="{Binding Prompt}" FontFamily="OpenSansSemibold" MaxLines="2"
+                                   LineBreakMode="TailTruncation" Grid.ColumnSpan="1" />
+                            <Label Grid.Row="1" Text="{Binding Answer}" Style="{StaticResource Caption}" MaxLines="2"
+                                   LineBreakMode="TailTruncation" />
+                            <Label Grid.Row="2" Style="{StaticResource Caption}" FontSize="12">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding CreatedAtLocal}" />
+                                        <Span Text="  ·  " />
+                                        <Span Text="{Binding Category}" />
+                                        <Span Text="  ·  " />
+                                        <Span Text="{Binding VerificationText}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                            <Button Grid.Column="1" Grid.RowSpan="3" Text="Ver" VerticalOptions="Center"
+                                    AutomationId="HistoryOpenButton"
+                                    SemanticProperties.Hint="Abre el detalle de la conversación"
+                                    Command="{Binding BindingContext.OpenCommand, Source={x:Reference Page}, x:DataType=ContentPage}"
+                                    CommandParameter="{Binding .}" />
+                            <Button Grid.Column="2" Grid.RowSpan="3" Text="Eliminar" VerticalOptions="Center"
+                                    Style="{StaticResource DangerButton}" AutomationId="HistoryDeleteButton"
+                                    SemanticProperties.Hint="Elimina la conversación del historial"
+                                    Command="{Binding BindingContext.DeleteCommand, Source={x:Reference Page}, x:DataType=ContentPage}"
+                                    CommandParameter="{Binding .}" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="AsistenteIA.Views.TemplatesPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:AsistenteIA.ViewModels"
+             xmlns:models="clr-namespace:AsistenteIA.Models"
+             x:DataType="vm:TemplatesViewModel"
+             Title="Plantillas">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="14" MaximumWidthRequest="900">
+            <Label Text="Plantillas de prompts" Style="{StaticResource PageTitle}" />
+            <Label Style="{StaticResource Caption}" LineBreakMode="WordWrap"
+                   Text="Seleccione una plantilla para editarla. Use {consulta} donde debe ir el texto que escribe el usuario." />
+
+            <CollectionView ItemsSource="{Binding Templates}" SelectionMode="Single" AutomationId="TemplatesList"
+                            SelectedItem="{Binding SelectedTemplate}" MaximumHeightRequest="260">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:PromptTemplate">
+                        <Grid Padding="10,8" ColumnDefinitions="*,Auto">
+                            <Label Text="{Binding Name}" FontFamily="OpenSansSemibold" />
+                            <Label Grid.Column="1" Text="{Binding Category}" Style="{StaticResource Caption}" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{Binding FormTitle}" Style="{StaticResource SectionTitle}" AutomationId="TemplatesFormTitle" />
+                    <Entry Placeholder="Nombre" Text="{Binding EditName}" AutomationId="TemplatesNameEntry"
+                           SemanticProperties.Description="Nombre de la plantilla" />
+                    <Picker Title="Categoría" ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding EditCategory}"
+                            AutomationId="TemplatesCategoryPicker" />
+                    <Editor Placeholder="Texto de la plantilla con {consulta}" Text="{Binding EditText}"
+                            AutoSize="TextChanges" MinimumHeightRequest="90" AutomationId="TemplatesTextEditor"
+                            SemanticProperties.Description="Texto de la plantilla" />
+                    <FlexLayout Wrap="Wrap">
+                        <Button Text="Guardar" Margin="0,0,10,10" Command="{Binding SaveCommand}" AutomationId="TemplatesSave" />
+                        <Button Text="Nueva" Margin="0,0,10,10" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding NewCommand}" AutomationId="TemplatesNew" />
+                        <Button Text="Eliminar" Margin="0,0,10,10" Style="{StaticResource DangerButton}"
+                                Command="{Binding DeleteCommand}" AutomationId="TemplatesDelete" />
+                    </FlexLayout>
+                    <Label Text="{Binding StatusMessage}" Style="{StaticResource Caption}" AutomationId="TemplatesStatus" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

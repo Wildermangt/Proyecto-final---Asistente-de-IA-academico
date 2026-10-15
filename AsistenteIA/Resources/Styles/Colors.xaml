@@ -27,6 +27,14 @@
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
 
+    <!-- Colores propios de AsistenteIA -->
+    <Color x:Key="CardLight">#F6F4FD</Color>
+    <Color x:Key="CardDark">#26213A</Color>
+    <Color x:Key="WarningBackground">#FFF4D6</Color>
+    <Color x:Key="WarningText">#5C4300</Color>
+    <Color x:Key="Danger">#B3261E</Color>
+    <Color x:Key="Success">#1B7F3A</Color>
+
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
     <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>

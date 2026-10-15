@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="AsistenteIA.Views.HomePage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:AsistenteIA.ViewModels"
+             x:DataType="vm:HomeViewModel"
+             Title="Inicio">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16" MaximumWidthRequest="900">
+
+            <Label Text="AsistenteIA" Style="{StaticResource PageTitle}" AutomationId="HomeTitle" />
+            <Label Style="{StaticResource Caption}" LineBreakMode="WordWrap"
+                   Text="Asistente académico móvil que envía tus consultas a un modelo de inteligencia artificial mediante una API REST, muestra la respuesta y guarda el historial en tu dispositivo." />
+
+            <!-- Aviso cuando no hay clave configurada -->
+            <Border Style="{StaticResource WarningCard}" IsVisible="{Binding HasKey, Converter={StaticResource InvertedBool}}"
+                    AutomationId="HomeNoKeyWarning">
+                <Label Style="{StaticResource WarningLabel}"
+                       Text="Aún no hay una clave de API configurada. Ve a Configuración para registrarla antes de consultar." />
+            </Border>
+
+            <Label Text="Accesos rápidos" Style="{StaticResource SectionTitle}" />
+            <FlexLayout Wrap="Wrap" JustifyContent="Start" AlignItems="Stretch">
+                <Button Text="Consultar IA" Margin="0,0,10,10" AutomationId="HomeGoChat"
+                        SemanticProperties.Hint="Abre la pantalla para escribir una consulta"
+                        Command="{Binding GoToCommand}" CommandParameter="//chat" />
+                <Button Text="Ver historial" Margin="0,0,10,10" AutomationId="HomeGoHistory"
+                        Style="{StaticResource SecondaryButton}"
+                        Command="{Binding GoToCommand}" CommandParameter="//history" />
+                <Button Text="Configuración" Margin="0,0,10,10" AutomationId="HomeGoSettings"
+                        Style="{StaticResource SecondaryButton}"
+                        Command="{Binding GoToCommand}" CommandParameter="//settings" />
+                <Button Text="Plantillas" Margin="0,0,10,10" AutomationId="HomeGoTemplates"
+                        Style="{StaticResource SecondaryButton}"
+                        Command="{Binding GoToCommand}" CommandParameter="templates" />
+            </FlexLayout>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Tu historial" Style="{StaticResource SectionTitle}" />
+                    <Label Text="{Binding HistorySummary}" AutomationId="HomeHistorySummary" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Recomendaciones de uso" Style="{StaticResource SectionTitle}" />
+                    <Label LineBreakMode="WordWrap" Text="• Escribe consultas claras y específicas; usa una plantilla para orientar la respuesta." />
+                    <Label LineBreakMode="WordWrap" Text="• La IA puede equivocarse o inventar datos: verifica siempre con fuentes confiables." />
+                    <Label LineBreakMode="WordWrap" Text="• No ingreses datos personales, contraseñas ni información confidencial." />
+                    <Label LineBreakMode="WordWrap" Text="• Usa las respuestas como apoyo al aprendizaje, no como sustituto de tu propio trabajo." />
+                    <Label LineBreakMode="WordWrap" Text="• Marca como verificadas las respuestas que contrastaste, desde el detalle del historial." />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
