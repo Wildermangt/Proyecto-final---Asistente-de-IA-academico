@@ -4,6 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:AsistenteIA.ViewModels"
              xmlns:models="clr-namespace:AsistenteIA.Models"
+             xmlns:fx="clr-namespace:AsistenteIA.Behaviors"
              x:DataType="vm:HistoryViewModel"
              x:Name="Page"
              Title="Historial">
@@ -25,7 +26,7 @@
 
         <CollectionView Grid.Row="3" ItemsSource="{Binding Records}" SelectionMode="None" AutomationId="HistoryList">
             <CollectionView.EmptyView>
-                <VerticalStackLayout Padding="24,40" Spacing="8">
+                <VerticalStackLayout Padding="24,40" Spacing="8" fx:Animations.Entrance="Up">
                     <Label Text="&#xe889;" Style="{StaticResource Icon}" FontSize="44" HorizontalOptions="Center" />
                     <Label Text="No hay conversaciones guardadas." Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" />
                     <Label Text="Realice una consulta y pulse Guardar en la respuesta para verla aquí." Style="{StaticResource Caption}"
@@ -53,6 +54,7 @@
 
                         <!-- Toda la tarjeta abre el detalle -->
                         <Border Style="{StaticResource Card}" Padding="14,12" AutomationId="HistoryItemCard"
+                                fx:Animations.Entrance="Up" fx:Animations.PressEffect="True"
                                 SemanticProperties.Description="{Binding Prompt, StringFormat='Conversación: {0}'}"
                                 SemanticProperties.Hint="Toque para abrir el detalle">
                             <Border.GestureRecognizers>

@@ -4,6 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:AsistenteIA.ViewModels"
              xmlns:models="clr-namespace:AsistenteIA.Models"
+             xmlns:fx="clr-namespace:AsistenteIA.Behaviors"
              x:DataType="vm:ChatViewModel"
              x:Name="Page"
              Title="Consultar IA">
@@ -53,7 +54,7 @@
             </CollectionView.ItemsLayout>
 
             <CollectionView.EmptyView>
-                <VerticalStackLayout Padding="24,40" Spacing="10" VerticalOptions="Center">
+                <VerticalStackLayout Padding="24,40" Spacing="10" VerticalOptions="Center" fx:Animations.Entrance="Up">
                     <Label Text="&#xe65f;" Style="{StaticResource Icon}" FontSize="44" HorizontalOptions="Center" />
                     <Label Text="¿Qué quiere aprender hoy?" Style="{StaticResource SectionTitle}" HorizontalOptions="Center" />
                     <Label Style="{StaticResource Caption}" HorizontalTextAlignment="Center" LineBreakMode="WordWrap"
@@ -66,7 +67,7 @@
                     <VerticalStackLayout Spacing="8" Padding="0,4">
 
                         <!-- Pregunta del usuario -->
-                        <Border Style="{StaticResource UserBubble}">
+                        <Border Style="{StaticResource UserBubble}" fx:Animations.Entrance="Right">
                             <Label Text="{Binding UserText}" TextColor="{StaticResource White}" LineBreakMode="WordWrap"
                                    SemanticProperties.Description="{Binding UserText, StringFormat='Su consulta: {0}'}" />
                         </Border>
@@ -74,7 +75,7 @@
                                HorizontalOptions="End" Margin="0,-4,4,0" />
 
                         <!-- Respuesta de la IA -->
-                        <Border Style="{StaticResource AiBubble}">
+                        <Border Style="{StaticResource AiBubble}" fx:Animations.Entrance="Left" fx:Animations.Delay="120">
                             <VerticalStackLayout Spacing="10">
                                 <HorizontalStackLayout Spacing="6">
                                     <Label Text="&#xe65f;" Style="{StaticResource Icon}" FontSize="18" />
@@ -86,13 +87,15 @@
                                 <HorizontalStackLayout Spacing="10" IsVisible="{Binding IsPending}">
                                     <ActivityIndicator IsRunning="{Binding IsPending}" HeightRequest="20" WidthRequest="20"
                                                        AutomationId="ChatBusyIndicator" />
-                                    <Label Text="Pensando la respuesta…" Style="{StaticResource Caption}" VerticalOptions="Center" />
+                                    <Label Text="Pensando la respuesta…" Style="{StaticResource Caption}" VerticalOptions="Center"
+                                           fx:Animations.Pulse="True" />
                                 </HorizontalStackLayout>
 
                                 <!-- Respuesta con formato básico (títulos, negritas, viñetas) -->
                                 <Label FormattedText="{Binding Answer, Converter={StaticResource Markdown}}"
                                        LineBreakMode="WordWrap" LineHeight="1.25"
-                                       IsVisible="{Binding HasAnswer}" AutomationId="ChatAnswerLabel" />
+                                       IsVisible="{Binding HasAnswer}" AutomationId="ChatAnswerLabel"
+                                       fx:Animations.Entrance="Fade" />
 
                                 <Border Style="{StaticResource WarningCard}" Padding="10,8" IsVisible="{Binding HasAnswer}">
                                     <Label Style="{StaticResource WarningLabel}" FontSize="12"
@@ -140,7 +143,8 @@
         </CollectionView>
 
         <!-- Estado (RF04): carga, respuesta, error y sin conexión -->
-        <Label Grid.Row="2" Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}" AutomationId="ChatStatusLabel">
+        <Label Grid.Row="2" Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}" AutomationId="ChatStatusLabel"
+               fx:Animations.FadeOnTextChange="True" fx:Animations.ShakeWhen="{Binding IsError}">
             <Label.Triggers>
                 <DataTrigger TargetType="Label" Binding="{Binding IsError}" Value="True">
                     <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Danger}, Dark={StaticResource DangerDark}}" />

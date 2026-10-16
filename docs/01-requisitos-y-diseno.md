@@ -29,8 +29,8 @@ Los estudiantes usan asistentes de IA sin conservar lo que preguntaron, sin dist
 | RF01 | Ingresar una pregunta o instrucción | `Views/ChatPage.xaml` (Editor enlazado a `ChatViewModel.Prompt`) |
 | RF02 | Validar contenido y longitud (5–2000) | `AiService.ValidatePrompt`, usado en `ChatViewModel.AskAsync` antes de enviar |
 | RF03 | Solicitud POST a la API REST | `AiService.SendChatAsync` → `POST chat/completions` |
-| RF04 | Estados de carga, respuesta, error y sin conexión | `ChatViewModel.IsBusy/StatusMessage/IsError`, `AiServiceException`, `IConnectivity` |
-| RF05 | Guardar consulta y respuesta en SQLite | `ChatViewModel.SaveAsync` → `DatabaseService.SaveAsync` |
+| RF04 | Estados de carga, respuesta, error y sin conexión | `ChatViewModel.IsBusy/StatusMessage/IsError`, burbuja "Pensando la respuesta…" (`ChatExchangeViewModel.IsPending`), `AiServiceException`, `IConnectivity` |
+| RF05 | Guardar consulta y respuesta en SQLite | Botón Guardar de cada respuesta → `ChatViewModel.SaveAsync(exchange)` → `DatabaseService.SaveAsync` |
 | RF06 | Consultar, filtrar, ver detalle y eliminar | `HistoryViewModel`, `DetailViewModel`, `DatabaseService.GetConversationsAsync/DeleteAsync` |
 | RF07 | Plantillas académicas editables | `TemplatesViewModel`, `PromptTemplate`, tabla `PromptTemplate` en SQLite |
 | RF08 | Registrar o actualizar la clave sin mostrarla | `SettingsPage` (`Entry IsPassword="True"`), `ApiKeyService` (SecureStorage) |

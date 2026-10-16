@@ -3,6 +3,7 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:AsistenteIA.ViewModels"
+             xmlns:fx="clr-namespace:AsistenteIA.Behaviors"
              x:DataType="vm:DetailViewModel"
              Title="Detalle">
     <ScrollView>
@@ -21,14 +22,14 @@
                     ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding SelectedCategory}"
                     SemanticProperties.Description="Categoría de la conversación" />
 
-            <Border Style="{StaticResource UserBubble}" HorizontalOptions="Fill" Margin="24,0,0,0">
+            <Border Style="{StaticResource UserBubble}" HorizontalOptions="Fill" Margin="24,0,0,0" fx:Animations.Entrance="Right">
                 <VerticalStackLayout Spacing="4">
                     <Label Text="Prompt enviado" FontFamily="InterSemiBold" FontSize="12" TextColor="{StaticResource White}" Opacity="0.85" />
                     <Label Text="{Binding Record.Prompt}" LineBreakMode="WordWrap" TextColor="{StaticResource White}" AutomationId="DetailPrompt" />
                 </VerticalStackLayout>
             </Border>
 
-            <Border Style="{StaticResource AiBubble}">
+            <Border Style="{StaticResource AiBubble}" fx:Animations.Entrance="Left" fx:Animations.Delay="120">
                 <VerticalStackLayout Spacing="8">
                     <HorizontalStackLayout Spacing="6">
                         <Label Text="&#xe65f;" Style="{StaticResource Icon}" FontSize="18" />
@@ -88,7 +89,8 @@
                 </Button>
             </FlexLayout>
 
-            <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}" AutomationId="DetailStatus" />
+            <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}" AutomationId="DetailStatus"
+                   fx:Animations.FadeOnTextChange="True" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

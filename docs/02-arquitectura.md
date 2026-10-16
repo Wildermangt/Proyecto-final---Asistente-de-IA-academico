@@ -27,6 +27,8 @@ flowchart TB
         K[ApiKeyService → SecureStorage]
         CN[IConnectivity]
     end
+    PLT[IClipboard · IShare]
+    VM --> PLT
     VM --> AI
     VM --> DB
     VM --> PR
@@ -46,7 +48,7 @@ Es la interfaz donde el usuario escribe sus consultas y ve las respuestas de la 
 | Pantalla (`Views/`) | ViewModel (`ViewModels/`) | Función |
 |---|---|---|
 | `HomePage` | `HomeViewModel` | Propósito de la app, accesos rápidos, resumen del historial y recomendaciones de uso |
-| `ChatPage` | `ChatViewModel` | Escribir la consulta, elegir plantilla y categoría, consultar, cancelar, guardar |
+| `ChatPage` | `ChatViewModel` | Escribir la consulta, elegir plantilla y categoría, consultar, cancelar; ver la conversación en burbujas y copiar, compartir o guardar cada respuesta |
 | `HistoryPage` | `HistoryViewModel` | Listar, buscar, filtrar por categoría y eliminar conversaciones |
 | `DetailPage` | `DetailViewModel` | Ver prompt, respuesta, fecha, categoría y verificación. Marcar como verificada |
 | `SettingsPage` | `SettingsViewModel` | Clave, modelo, tiempo de espera y sección Acerca de |
@@ -54,7 +56,8 @@ Es la interfaz donde el usuario escribe sus consultas y ve las respuestas de la 
 
 - **Navegación:** `AppShell` con un `TabBar` (Inicio, Consultar, Historial, Configuración) y rutas registradas (`detail?id=`, `templates`).
 - **Estado y comandos:** CommunityToolkit.Mvvm (`[ObservableProperty]`, `[RelayCommand]` con `CanExecute`).
-- **Diseño adaptable:** `FlexLayout Wrap`, `ScrollView` y estilos en `Resources/Styles`.
+- **Diseño adaptable:** `FlexLayout Wrap`, `Grid`, `ScrollView` y estilos en `Resources/Styles`.
+- **Animaciones:** propiedades adjuntas de `Behaviors/Animations.cs`; respetan la preferencia del sistema (`MotionPreferences`).
 - **Accesibilidad:** `SemanticProperties` y `AutomationId` en los controles.
 - **Desacople:** los diálogos y la navegación se piden por `IDialogService`, así los ViewModels no dependen de las páginas.
 
@@ -80,7 +83,7 @@ Contiene las reglas del dominio, los modelos y las decisiones de diseño.
 **Reglas de negocio**
 - La consulta debe tener entre 5 y 2000 caracteres (`AiService.ValidatePrompt`). Se valida en el ViewModel antes de enviar y otra vez en el servicio.
 - La plantilla elegida se aplica reemplazando `{consulta}` (`PromptTemplate.Apply`). Si el resultado supera 2000 caracteres, se rechaza.
-- Solo se guarda una respuesta recibida y no se guarda dos veces (`ChatViewModel.CanSave`).
+- Solo se guarda una respuesta recibida y no se guarda dos veces (`ChatExchangeViewModel.CanSave`).
 - Una respuesta solo se marca como verificada por acción explícita del usuario después de contrastarla con fuentes.
 - El tiempo de espera es configurable (de 1 a 120 s) y distinto de la cancelación manual.
 
@@ -106,9 +109,10 @@ classDiagram
     class DatabaseService { +SaveAsync(record); +GetConversationsAsync(search, category); +GetConversationAsync(id); +DeleteAsync(record); +GetTemplatesAsync(); +SaveTemplateAsync(t); +DeleteTemplateAsync(t) }
     class IDialogService { <<interface>> +ConfirmAsync(); +AlertAsync(); +GoToAsync() }
 
-    class ChatViewModel { +Prompt; +Answer; +StatusMessage; +IsBusy; +AskCommand; +CancelCommand; +SaveCommand }
+    class ChatViewModel { +Prompt; +Exchanges; +StatusMessage; +IsBusy; +AskCommand; +CancelCommand; +SaveCommand; +CopyCommand; +ShareCommand; +ClearCommand }
+    class ChatExchangeViewModel { +UserText; +SentPrompt; +Answer; +IsPending; +IsSaved }
     class HistoryViewModel { +Records; +SearchText; +SelectedCategory; +DeleteCommand; +OpenCommand }
-    class DetailViewModel { +Record; +ToggleVerifiedCommand; +DeleteCommand }
+    class DetailViewModel { +Record; +ToggleVerifiedCommand; +CopyCommand; +ShareCommand; +DeleteCommand }
     class SettingsViewModel { +ApiKeyInput; +MaskedKey; +Models; +SaveKeyCommand; +TestConnectionCommand }
     class TemplatesViewModel { +Templates; +SaveCommand; +DeleteCommand }
 
@@ -124,6 +128,7 @@ classDiagram
     DatabaseService ..> ConversationRecord
     DatabaseService ..> PromptTemplate
     ChatViewModel --> AiService
+    ChatViewModel "1" o-- "*" ChatExchangeViewModel
     ChatViewModel --> DatabaseService
     HistoryViewModel --> DatabaseService
     DetailViewModel --> DatabaseService
@@ -137,11 +142,11 @@ classDiagram
 ### Recorrido de una consulta (XAML → ViewModel → REST → JSON → SQLite)
 
 1. **XAML.** En `ChatPage`, el `Editor` está enlazado a `Prompt` y el botón Consultar a `AskCommand`.
-2. **ViewModel.** `ChatViewModel.AskAsync` valida, aplica la plantilla, crea un `CancellationTokenSource` y pone `IsBusy = true`.
+2. **ViewModel.** `ChatViewModel.AskAsync` valida, aplica la plantilla, agrega un `ChatExchangeViewModel` pendiente a `Exchanges` (burbuja de la pregunta), crea un `CancellationTokenSource` y pone `IsBusy = true`.
 3. **REST.** `AiService.SendChatAsync` envía el POST con Bearer y el JSON.
 4. **JSON.** `ReadFromJsonAsync<ChatResponse>` devuelve `choices[0].message.content`. Si hay error HTTP, se lanza `AiServiceException`.
-5. **Vista.** `Answer` y `StatusMessage` cambian y el binding refresca la pantalla.
-6. **SQLite.** El comando Guardar crea un `ConversationRecord` y llama a `DatabaseService.SaveAsync` (`InsertAsync`).
+5. **Vista.** `exchange.Answer` y `StatusMessage` cambian y el binding refresca la burbuja; `MarkdownToFormattedStringConverter` muestra el formato.
+6. **SQLite.** El botón Guardar de la respuesta ejecuta `SaveCommand` con ese intercambio, que crea un `ConversationRecord` y llama a `DatabaseService.SaveAsync` (`InsertAsync`).
 
 ### Decisiones técnicas
 
@@ -156,6 +161,7 @@ classDiagram
 | Markdown interpretado en la vista, no en el prompt | Pedirle al modelo "sin Markdown" hizo que omitiera las tildes (F8). La respuesta se guarda tal como llega y `MarkdownToFormattedStringConverter` la muestra con títulos, negritas y viñetas (F16). `PlainText` quita `#`, `**`, `---` para copiar, compartir y las vistas previas. |
 | Identidad visual propia | Paleta verde azulado con contraste WCAG AA verificado en tema claro y oscuro, fuente Inter, íconos Material Icons Round (fuentes con licencia OFL / Apache 2.0), ícono y splash propios. Los colores de estado usan `AppThemeBinding` + `DataTrigger` sobre `IsError` (F17). |
 | Consulta en formato de conversación | `ChatPage` muestra cada consulta como burbuja del usuario y la respuesta como burbuja de la IA (`ChatExchangeViewModel`). Cada respuesta tiene Copiar, Compartir y Guardar; `IClipboard` e `IShare` se inyectan desde `MauiProgram`. |
+| Animaciones como propiedades adjuntas (`Behaviors/Animations.cs`) | Entrada de burbujas y tarjetas, efecto al presionar botones y tarjetas, pulso de "Pensando la respuesta…", realce del mensaje de estado y sacudida ante errores. Son solo de la vista: no tocan los ViewModels. `MotionPreferences` las omite si el usuario desactivó las animaciones en Windows o Android (accesibilidad). |
 | Plantillas en SQLite | Son editables (RF07) y persisten. |
 | Bindings compilados (`x:DataType`) + XAML `SourceGen` | Errores de enlace detectados al compilar y mejor rendimiento. |
 | Diseño responsive | `FlexLayout Wrap` en filas de controles, `MaximumWidthRequest="1000"` en todas las páginas, lista y formulario lado a lado en pantallas anchas, `Grid` con columna `*` para textos largos. Verificado en 400, 820 y 1400 px (F3, F11–F15). |

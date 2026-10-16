@@ -42,10 +42,11 @@ La clave **no** está en el código ni en el repositorio: la ingresa cada usuari
 AsistenteIA/
 ├─ Models/       ChatModels (JSON), ConversationRecord, PromptTemplate
 ├─ Services/     AiService, ApiKeyService, SettingsService, DatabaseService, DialogService
-├─ ViewModels/   Home, Chat, History, Detail, Settings, Templates
+├─ ViewModels/   Home, Chat (+ ChatExchange), History, Detail, Settings, Templates
 ├─ Views/        HomePage, ChatPage, HistoryPage, DetailPage, SettingsPage, TemplatesPage
-├─ Converters/   Conversores de enlace de datos
-└─ Resources/    Colors.xaml, Styles.xaml, fuentes e iconos
+├─ Converters/   Conversores de enlace de datos (bool invertido, Markdown con formato y texto plano)
+├─ Behaviors/    Animaciones de la interfaz (propiedades adjuntas) y preferencia de movimiento del sistema
+└─ Resources/    Colors.xaml, Styles.xaml, fuentes (Inter, Material Icons Round), ícono y splash
 docs/            Requisitos, arquitectura, API, riesgos, pruebas, manuales y evidencias
 ```
 

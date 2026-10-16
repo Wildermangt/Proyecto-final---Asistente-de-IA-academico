@@ -3,6 +3,7 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:AsistenteIA.ViewModels"
+             xmlns:fx="clr-namespace:AsistenteIA.Behaviors"
              x:DataType="vm:HomeViewModel"
              Title="Inicio">
 
@@ -11,6 +12,8 @@
         <Style TargetType="Border" x:Key="QuickTile" BasedOn="{StaticResource Card}">
             <Setter Property="Padding" Value="14" />
             <Setter Property="MinimumHeightRequest" Value="96" />
+            <Setter Property="fx:Animations.Entrance" Value="Up" />
+            <Setter Property="fx:Animations.PressEffect" Value="True" />
         </Style>
     </ContentPage.Resources>
 
@@ -18,7 +21,7 @@
         <VerticalStackLayout Padding="20" Spacing="18" MaximumWidthRequest="1000">
 
             <!-- Encabezado -->
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14" fx:Animations.Entrance="Fade">
                 <Border WidthRequest="56" HeightRequest="56" StrokeThickness="0" StrokeShape="RoundRectangle 16"
                         BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource UserBubbleDark}}">
                     <Label Text="&#xe65f;" FontFamily="Icons" FontSize="30" TextColor="{StaticResource White}"
@@ -43,7 +46,7 @@
             <Label Text="Accesos rápidos" Style="{StaticResource SectionTitle}" />
             <!-- Cuadrícula 2 x 2: cabe en un teléfono y en escritorio sin recortar las tarjetas -->
             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
-                <Border Style="{StaticResource QuickTile}" AutomationId="HomeGoChat"
+                <Border Style="{StaticResource QuickTile}" AutomationId="HomeGoChat" fx:Animations.Delay="60"
                         SemanticProperties.Description="Consultar IA" SemanticProperties.Hint="Abre la pantalla para escribir una consulta">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding GoToCommand}" CommandParameter="//chat" />
@@ -54,7 +57,7 @@
                         <Label Text="Escribe una pregunta y recibe la respuesta" Style="{StaticResource Caption}" FontSize="12" LineBreakMode="WordWrap" />
                     </VerticalStackLayout>
                 </Border>
-                <Border Grid.Column="1" Style="{StaticResource QuickTile}" AutomationId="HomeGoHistory"
+                <Border Grid.Column="1" Style="{StaticResource QuickTile}" AutomationId="HomeGoHistory" fx:Animations.Delay="130"
                         SemanticProperties.Description="Ver historial">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding GoToCommand}" CommandParameter="//history" />
@@ -66,7 +69,7 @@
                                AutomationId="HomeHistorySummary" />
                     </VerticalStackLayout>
                 </Border>
-                <Border Grid.Row="1" Style="{StaticResource QuickTile}" AutomationId="HomeGoTemplates"
+                <Border Grid.Row="1" Style="{StaticResource QuickTile}" AutomationId="HomeGoTemplates" fx:Animations.Delay="200"
                         SemanticProperties.Description="Plantillas">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding GoToCommand}" CommandParameter="templates" />
@@ -77,7 +80,7 @@
                         <Label Text="Crea y edita prompts académicos" Style="{StaticResource Caption}" FontSize="12" LineBreakMode="WordWrap" />
                     </VerticalStackLayout>
                 </Border>
-                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource QuickTile}" AutomationId="HomeGoSettings"
+                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource QuickTile}" AutomationId="HomeGoSettings" fx:Animations.Delay="270"
                         SemanticProperties.Description="Configuración">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding GoToCommand}" CommandParameter="//settings" />
@@ -90,7 +93,7 @@
                 </Border>
             </Grid>
 
-            <Border Style="{StaticResource Card}">
+            <Border Style="{StaticResource Card}" fx:Animations.Entrance="Up" fx:Animations.Delay="340">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Recomendaciones de uso" Style="{StaticResource SectionTitle}" />
                     <Label LineBreakMode="WordWrap" Text="• Escribe consultas claras y específicas; usa una plantilla para orientar la respuesta." />
