@@ -11,7 +11,8 @@
             </ResourceDictionary.MergedDictionaries>
 
             <conv:InvertedBoolConverter x:Key="InvertedBool" />
-            <conv:BoolToStatusColorConverter x:Key="StatusColor" ErrorColor="#B3261E" NormalColor="#404040" />
+            <conv:MarkdownToFormattedStringConverter x:Key="Markdown" />
+            <conv:MarkdownToPlainTextConverter x:Key="PlainText" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

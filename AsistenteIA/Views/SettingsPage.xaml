@@ -40,9 +40,14 @@
                     <!-- Grid (no HorizontalStackLayout) para que los mensajes largos se ajusten en varias líneas -->
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
                         <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HeightRequest="22" WidthRequest="22" />
-                        <Label Grid.Column="1" Text="{Binding StatusMessage}" LineBreakMode="WordWrap" FontSize="13"
-                               TextColor="{Binding IsError, Converter={StaticResource StatusColor}}"
-                               AutomationId="SettingsStatus" />
+                        <Label Grid.Column="1" Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}"
+                               AutomationId="SettingsStatus">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsError}" Value="True">
+                                    <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Danger}, Dark={StaticResource DangerDark}}" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
                     </Grid>
                 </VerticalStackLayout>
             </Border>

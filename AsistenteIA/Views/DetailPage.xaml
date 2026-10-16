@@ -21,36 +21,74 @@
                     ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding SelectedCategory}"
                     SemanticProperties.Description="Categoría de la conversación" />
 
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="6">
-                    <Label Text="Prompt enviado" Style="{StaticResource SectionTitle}" />
-                    <Label Text="{Binding Record.Prompt}" LineBreakMode="WordWrap" AutomationId="DetailPrompt" />
+            <Border Style="{StaticResource UserBubble}" HorizontalOptions="Fill" Margin="24,0,0,0">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Prompt enviado" FontFamily="InterSemiBold" FontSize="12" TextColor="{StaticResource White}" Opacity="0.85" />
+                    <Label Text="{Binding Record.Prompt}" LineBreakMode="WordWrap" TextColor="{StaticResource White}" AutomationId="DetailPrompt" />
                 </VerticalStackLayout>
             </Border>
 
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="6">
-                    <Label Text="Respuesta" Style="{StaticResource SectionTitle}" />
-                    <Label Text="{Binding Record.Answer}" LineBreakMode="WordWrap" AutomationId="DetailAnswer" />
+            <Border Style="{StaticResource AiBubble}">
+                <VerticalStackLayout Spacing="8">
+                    <HorizontalStackLayout Spacing="6">
+                        <Label Text="&#xe65f;" Style="{StaticResource Icon}" FontSize="18" />
+                        <Label Text="Respuesta" Style="{StaticResource SectionTitle}" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <Label FormattedText="{Binding Record.Answer, Converter={StaticResource Markdown}}"
+                           LineBreakMode="WordWrap" LineHeight="1.25" AutomationId="DetailAnswer" />
                 </VerticalStackLayout>
             </Border>
 
+            <!-- Amarillo sin verificar / verde verificada -->
             <Border Style="{StaticResource WarningCard}">
-                <Label Text="{Binding VerificationText}" Style="{StaticResource WarningLabel}"
-                       AutomationId="DetailVerification" />
+                <Border.Triggers>
+                    <DataTrigger TargetType="Border" Binding="{Binding IsVerified}" Value="True">
+                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SuccessBackground}, Dark={StaticResource SuccessBackgroundDark}}" />
+                    </DataTrigger>
+                </Border.Triggers>
+                <Label Text="{Binding VerificationText}" Style="{StaticResource WarningLabel}" AutomationId="DetailVerification">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsVerified}" Value="True">
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Success}, Dark={StaticResource SuccessDark}}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
             </Border>
 
             <FlexLayout Wrap="Wrap">
-                <Button Text="{Binding VerifyButtonText}" Margin="0,0,10,10" AutomationId="DetailVerifyButton"
+                <Button Text="{Binding VerifyButtonText}" Margin="0,0,8,6" AutomationId="DetailVerifyButton"
                         Command="{Binding ToggleVerifiedCommand}"
-                        SemanticProperties.Hint="Marca la respuesta como contrastada con fuentes confiables" />
-                <Button Text="Copiar respuesta" Margin="0,0,10,10" Style="{StaticResource SecondaryButton}"
-                        AutomationId="DetailCopyButton" Command="{Binding CopyCommand}" />
-                <Button Text="Eliminar" Margin="0,0,10,10" Style="{StaticResource DangerButton}"
-                        AutomationId="DetailDeleteButton" Command="{Binding DeleteCommand}" />
+                        SemanticProperties.Hint="Marca la respuesta como contrastada con fuentes confiables">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="Icons" Glyph="&#xe86c;" Size="18"
+                                         Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" />
+                    </Button.ImageSource>
+                </Button>
+                <Button Text="Copiar" Margin="0,0,8,6" Style="{StaticResource ChipButton}"
+                        AutomationId="DetailCopyButton" Command="{Binding CopyCommand}"
+                        SemanticProperties.Hint="Copia la respuesta al portapapeles">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="Icons" Glyph="&#xf08a;" Size="18"
+                                         Color="{AppThemeBinding Light={StaticResource Tertiary}, Dark={StaticResource White}}" />
+                    </Button.ImageSource>
+                </Button>
+                <Button Text="Compartir" Margin="0,0,8,6" Style="{StaticResource ChipButton}"
+                        AutomationId="DetailShareButton" Command="{Binding ShareCommand}"
+                        SemanticProperties.Hint="Comparte la pregunta y la respuesta con otra aplicación">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="Icons" Glyph="&#xe80d;" Size="18"
+                                         Color="{AppThemeBinding Light={StaticResource Tertiary}, Dark={StaticResource White}}" />
+                    </Button.ImageSource>
+                </Button>
+                <Button Text="Eliminar" Margin="0,0,8,6" Style="{StaticResource DangerButton}"
+                        AutomationId="DetailDeleteButton" Command="{Binding DeleteCommand}">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="Icons" Glyph="&#xe872;" Size="18" Color="{StaticResource White}" />
+                    </Button.ImageSource>
+                </Button>
             </FlexLayout>
 
-            <Label Text="{Binding StatusMessage}" Style="{StaticResource Caption}" AutomationId="DetailStatus" />
+            <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}" AutomationId="DetailStatus" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

@@ -7,15 +7,15 @@
              x:DataType="vm:HistoryViewModel"
              x:Name="Page"
              Title="Historial">
-    <Grid Padding="20,12" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10" MaximumWidthRequest="1000">
+    <Grid Padding="16,8,16,12" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" MaximumWidthRequest="1000">
 
         <Label Text="Busque, filtre y abra sus conversaciones guardadas." Style="{StaticResource Caption}" LineBreakMode="WordWrap" />
 
-        <FlexLayout Grid.Row="1" Wrap="Wrap" AlignItems="Center" Margin="-5,0">
+        <FlexLayout Grid.Row="1" Wrap="Wrap" AlignItems="Center">
             <SearchBar Placeholder="Buscar en preguntas y respuestas" Text="{Binding SearchText}"
-                       Margin="5,0,5,6" FlexLayout.Basis="260" FlexLayout.Grow="1"
+                       Margin="0,0,8,4" FlexLayout.Basis="260" FlexLayout.Grow="1"
                        AutomationId="HistorySearch" SemanticProperties.Description="Buscar en el historial" />
-            <Picker Title="Categoría" Margin="5,0,5,6" FlexLayout.Basis="170" FlexLayout.Grow="0"
+            <Picker Title="Categoría" Margin="0,0,0,4" FlexLayout.Basis="170" FlexLayout.Grow="0"
                     AutomationId="HistoryCategoryFilter"
                     ItemsSource="{Binding CategoryFilters}" SelectedItem="{Binding SelectedCategory}"
                     SemanticProperties.Description="Filtrar por categoría" />
@@ -25,49 +25,74 @@
 
         <CollectionView Grid.Row="3" ItemsSource="{Binding Records}" SelectionMode="None" AutomationId="HistoryList">
             <CollectionView.EmptyView>
-                <VerticalStackLayout Padding="20" Spacing="6">
-                    <Label Text="No hay conversaciones guardadas." FontSize="16" HorizontalTextAlignment="Center" />
-                    <Label Text="Realice una consulta y pulse Guardar para verla aquí." Style="{StaticResource Caption}"
-                           HorizontalTextAlignment="Center" />
+                <VerticalStackLayout Padding="24,40" Spacing="8">
+                    <Label Text="&#xe889;" Style="{StaticResource Icon}" FontSize="44" HorizontalOptions="Center" />
+                    <Label Text="No hay conversaciones guardadas." Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" />
+                    <Label Text="Realice una consulta y pulse Guardar en la respuesta para verla aquí." Style="{StaticResource Caption}"
+                           HorizontalTextAlignment="Center" LineBreakMode="WordWrap" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
             <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:ConversationRecord">
-                    <Border Style="{StaticResource Card}" Padding="12">
-                        <!-- Texto a todo el ancho y acciones debajo: estable en cualquier tamaño de pantalla -->
-                        <VerticalStackLayout Spacing="6">
-                            <VerticalStackLayout Spacing="2">
-                                <Label Text="{Binding Prompt}" FontFamily="OpenSansSemibold" MaxLines="2"
-                                       LineBreakMode="TailTruncation" />
-                                <Label Text="{Binding Answer}" Style="{StaticResource Caption}" MaxLines="2"
-                                       LineBreakMode="TailTruncation" />
-                                <Label Style="{StaticResource Caption}" FontSize="12">
-                                    <Label.FormattedText>
-                                        <FormattedString>
-                                            <Span Text="{Binding CreatedAtLocal}" />
-                                            <Span Text="  ·  " />
-                                            <Span Text="{Binding Category}" />
-                                            <Span Text="  ·  " />
-                                            <Span Text="{Binding VerificationText}" />
-                                        </FormattedString>
-                                    </Label.FormattedText>
-                                </Label>
-                            </VerticalStackLayout>
-                            <HorizontalStackLayout Spacing="8" HorizontalOptions="End">
-                                <Button Text="Ver" AutomationId="HistoryOpenButton"
-                                        SemanticProperties.Hint="Abre el detalle de la conversación"
-                                        Command="{Binding BindingContext.OpenCommand, Source={x:Reference Page}, x:DataType=ContentPage}"
-                                        CommandParameter="{Binding .}" />
-                                <Button Text="Eliminar" Style="{StaticResource DangerButton}" AutomationId="HistoryDeleteButton"
+                    <!-- En móvil: deslizar a la izquierda para eliminar. En cualquier dispositivo: botón de papelera. -->
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems Mode="Execute">
+                                <SwipeItem Text="Eliminar" BackgroundColor="{StaticResource Danger}"
+                                           Command="{Binding BindingContext.DeleteCommand, Source={x:Reference Page}, x:DataType=ContentPage}"
+                                           CommandParameter="{Binding .}">
+                                    <SwipeItem.IconImageSource>
+                                        <FontImageSource FontFamily="Icons" Glyph="&#xe872;" Color="{StaticResource White}" />
+                                    </SwipeItem.IconImageSource>
+                                </SwipeItem>
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <!-- Toda la tarjeta abre el detalle -->
+                        <Border Style="{StaticResource Card}" Padding="14,12" AutomationId="HistoryItemCard"
+                                SemanticProperties.Description="{Binding Prompt, StringFormat='Conversación: {0}'}"
+                                SemanticProperties.Hint="Toque para abrir el detalle">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding BindingContext.OpenCommand, Source={x:Reference Page}, x:DataType=ContentPage}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <VerticalStackLayout Spacing="3">
+                                    <Label Text="{Binding Prompt}" FontFamily="InterSemiBold" MaxLines="2"
+                                           LineBreakMode="TailTruncation" />
+                                    <Label Text="{Binding Answer, Converter={StaticResource PlainText}}" Style="{StaticResource Caption}"
+                                           MaxLines="2" LineBreakMode="TailTruncation" />
+                                    <HorizontalStackLayout Spacing="6" Margin="0,4,0,0">
+                                        <Label Text="&#xe86c;" Style="{StaticResource Icon}" FontSize="15"
+                                               TextColor="{AppThemeBinding Light={StaticResource Success}, Dark={StaticResource SuccessDark}}"
+                                               IsVisible="{Binding IsVerified}" />
+                                        <Label Style="{StaticResource Caption}" FontSize="12" VerticalOptions="Center">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="{Binding CreatedAtLocal}" />
+                                                    <Span Text="  ·  " />
+                                                    <Span Text="{Binding Category}" />
+                                                    <Span Text="  ·  " />
+                                                    <Span Text="{Binding VerificationText}" />
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                                <Button Grid.Column="1" Text="&#xe872;" Style="{StaticResource DangerIconButton}"
+                                        VerticalOptions="Start" AutomationId="HistoryDeleteButton"
+                                        ToolTipProperties.Text="Eliminar"
+                                        SemanticProperties.Description="Eliminar conversación"
                                         SemanticProperties.Hint="Elimina la conversación del historial"
                                         Command="{Binding BindingContext.DeleteCommand, Source={x:Reference Page}, x:DataType=ContentPage}"
                                         CommandParameter="{Binding .}" />
-                            </HorizontalStackLayout>
-                        </VerticalStackLayout>
-                    </Border>
+                            </Grid>
+                        </Border>
+                    </SwipeView>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

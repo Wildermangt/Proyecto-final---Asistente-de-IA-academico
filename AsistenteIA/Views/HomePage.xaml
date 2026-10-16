@@ -5,12 +5,33 @@
              xmlns:vm="clr-namespace:AsistenteIA.ViewModels"
              x:DataType="vm:HomeViewModel"
              Title="Inicio">
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="16" MaximumWidthRequest="1000">
 
-            <Label Text="AsistenteIA" Style="{StaticResource PageTitle}" AutomationId="HomeTitle" />
+    <ContentPage.Resources>
+        <!-- Tarjeta de acceso rápido: ícono, título y descripción; toda la tarjeta es táctil -->
+        <Style TargetType="Border" x:Key="QuickTile" BasedOn="{StaticResource Card}">
+            <Setter Property="Padding" Value="14" />
+            <Setter Property="MinimumHeightRequest" Value="96" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="18" MaximumWidthRequest="1000">
+
+            <!-- Encabezado -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                <Border WidthRequest="56" HeightRequest="56" StrokeThickness="0" StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource UserBubbleDark}}">
+                    <Label Text="&#xe65f;" FontFamily="Icons" FontSize="30" TextColor="{StaticResource White}"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                    <Label Text="AsistenteIA" Style="{StaticResource PageTitle}" AutomationId="HomeTitle" />
+                    <Label Text="Tu asistente académico con inteligencia artificial" Style="{StaticResource Caption}" />
+                </VerticalStackLayout>
+            </Grid>
+
             <Label Style="{StaticResource Caption}" LineBreakMode="WordWrap"
-                   Text="Asistente académico móvil que envía tus consultas a un modelo de inteligencia artificial mediante una API REST, muestra la respuesta y guarda el historial en tu dispositivo." />
+                   Text="Envía tus consultas a un modelo de inteligencia artificial mediante una API REST, revisa la respuesta y guarda el historial en tu dispositivo." />
 
             <!-- Aviso cuando no hay clave configurada -->
             <Border Style="{StaticResource WarningCard}" IsVisible="{Binding HasKey, Converter={StaticResource InvertedBool}}"
@@ -20,30 +41,57 @@
             </Border>
 
             <Label Text="Accesos rápidos" Style="{StaticResource SectionTitle}" />
-            <FlexLayout Wrap="Wrap" JustifyContent="Start" AlignItems="Stretch">
-                <Button Text="Consultar IA" Margin="0,0,10,10" AutomationId="HomeGoChat"
-                        SemanticProperties.Hint="Abre la pantalla para escribir una consulta"
-                        Command="{Binding GoToCommand}" CommandParameter="//chat" />
-                <Button Text="Ver historial" Margin="0,0,10,10" AutomationId="HomeGoHistory"
-                        Style="{StaticResource SecondaryButton}"
-                        Command="{Binding GoToCommand}" CommandParameter="//history" />
-                <Button Text="Configuración" Margin="0,0,10,10" AutomationId="HomeGoSettings"
-                        Style="{StaticResource SecondaryButton}"
-                        Command="{Binding GoToCommand}" CommandParameter="//settings" />
-                <Button Text="Plantillas" Margin="0,0,10,10" AutomationId="HomeGoTemplates"
-                        Style="{StaticResource SecondaryButton}"
-                        Command="{Binding GoToCommand}" CommandParameter="templates" />
-            </FlexLayout>
+            <!-- Cuadrícula 2 x 2: cabe en un teléfono y en escritorio sin recortar las tarjetas -->
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                <Border Style="{StaticResource QuickTile}" AutomationId="HomeGoChat"
+                        SemanticProperties.Description="Consultar IA" SemanticProperties.Hint="Abre la pantalla para escribir una consulta">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoToCommand}" CommandParameter="//chat" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xe0bf;" Style="{StaticResource Icon}" FontSize="26" />
+                        <Label Text="Consultar IA" FontFamily="InterSemiBold" />
+                        <Label Text="Escribe una pregunta y recibe la respuesta" Style="{StaticResource Caption}" FontSize="12" LineBreakMode="WordWrap" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource QuickTile}" AutomationId="HomeGoHistory"
+                        SemanticProperties.Description="Ver historial">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoToCommand}" CommandParameter="//history" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xe889;" Style="{StaticResource Icon}" FontSize="26" />
+                        <Label Text="Historial" FontFamily="InterSemiBold" />
+                        <Label Text="{Binding HistorySummary}" Style="{StaticResource Caption}" FontSize="12" LineBreakMode="WordWrap"
+                               AutomationId="HomeHistorySummary" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Row="1" Style="{StaticResource QuickTile}" AutomationId="HomeGoTemplates"
+                        SemanticProperties.Description="Plantillas">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoToCommand}" CommandParameter="templates" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xe745;" Style="{StaticResource Icon}" FontSize="26" />
+                        <Label Text="Plantillas" FontFamily="InterSemiBold" />
+                        <Label Text="Crea y edita prompts académicos" Style="{StaticResource Caption}" FontSize="12" LineBreakMode="WordWrap" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource QuickTile}" AutomationId="HomeGoSettings"
+                        SemanticProperties.Description="Configuración">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoToCommand}" CommandParameter="//settings" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xe8b8;" Style="{StaticResource Icon}" FontSize="26" />
+                        <Label Text="Configuración" FontFamily="InterSemiBold" />
+                        <Label Text="Clave, proveedor, modelo y acerca de" Style="{StaticResource Caption}" FontSize="12" LineBreakMode="WordWrap" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
 
             <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="4">
-                    <Label Text="Tu historial" Style="{StaticResource SectionTitle}" />
-                    <Label Text="{Binding HistorySummary}" AutomationId="HomeHistorySummary" />
-                </VerticalStackLayout>
-            </Border>
-
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="6">
+                <VerticalStackLayout Spacing="8">
                     <Label Text="Recomendaciones de uso" Style="{StaticResource SectionTitle}" />
                     <Label LineBreakMode="WordWrap" Text="• Escribe consultas claras y específicas; usa una plantilla para orientar la respuesta." />
                     <Label LineBreakMode="WordWrap" Text="• La IA puede equivocarse o inventar datos: verifica siempre con fuentes confiables." />

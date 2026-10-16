@@ -6,11 +6,28 @@
     xmlns:views="clr-namespace:AsistenteIA.Views"
     Title="AsistenteIA">
 
+    <!-- Íconos de las pestañas: glifos de la fuente Material Icons Round (alias "Icons") -->
     <TabBar>
-        <ShellContent Title="Inicio" Route="home" ContentTemplate="{DataTemplate views:HomePage}" />
-        <ShellContent Title="Consultar" Route="chat" ContentTemplate="{DataTemplate views:ChatPage}" />
-        <ShellContent Title="Historial" Route="history" ContentTemplate="{DataTemplate views:HistoryPage}" />
-        <ShellContent Title="Configuración" Route="settings" ContentTemplate="{DataTemplate views:SettingsPage}" />
+        <ShellContent Title="Inicio" Route="home" ContentTemplate="{DataTemplate views:HomePage}">
+            <ShellContent.Icon>
+                <FontImageSource FontFamily="Icons" Glyph="&#xe88a;" Size="24" />
+            </ShellContent.Icon>
+        </ShellContent>
+        <ShellContent Title="Consultar" Route="chat" ContentTemplate="{DataTemplate views:ChatPage}">
+            <ShellContent.Icon>
+                <FontImageSource FontFamily="Icons" Glyph="&#xe0bf;" Size="24" />
+            </ShellContent.Icon>
+        </ShellContent>
+        <ShellContent Title="Historial" Route="history" ContentTemplate="{DataTemplate views:HistoryPage}">
+            <ShellContent.Icon>
+                <FontImageSource FontFamily="Icons" Glyph="&#xe889;" Size="24" />
+            </ShellContent.Icon>
+        </ShellContent>
+        <ShellContent Title="Configuración" Route="settings" ContentTemplate="{DataTemplate views:SettingsPage}">
+            <ShellContent.Icon>
+                <FontImageSource FontFamily="Icons" Glyph="&#xe8b8;" Size="24" />
+            </ShellContent.Icon>
+        </ShellContent>
     </TabBar>
 
 </Shell>

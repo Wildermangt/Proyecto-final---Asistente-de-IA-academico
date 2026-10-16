@@ -14,8 +14,11 @@ public static class MauiProgram
             .UseMauiApp<App>()
             .ConfigureFonts(fonts =>
             {
-                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                fonts.AddFont("Inter-Regular.ttf", "InterRegular");
+                fonts.AddFont("Inter-SemiBold.ttf", "InterSemiBold");
+                fonts.AddFont("Inter-Bold.ttf", "InterBold");
+                // Íconos de la interfaz (Material Icons Round, licencia Apache 2.0)
+                fonts.AddFont("MaterialIconsRound.otf", "Icons");
             });
 
         // HttpClient reutilizable. La URL depende del proveedor elegido (AiProvider) y el tiempo
@@ -28,6 +31,8 @@ public static class MauiProgram
         // APIs de la plataforma
         builder.Services.AddSingleton(Connectivity.Current);
         builder.Services.AddSingleton(Preferences.Default);
+        builder.Services.AddSingleton(Clipboard.Default);
+        builder.Services.AddSingleton(Share.Default);
 
         // Servicios
         builder.Services.AddSingleton<ApiKeyService>();

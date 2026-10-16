@@ -64,7 +64,7 @@ Conecta el cliente con el modelo de IA mediante una API REST compatible con Open
 
 | Clase | Responsabilidad |
 |---|---|
-| `AiService.AskAsync` | Valida el prompt, arma `ChatRequest` (mensaje *system* académico + mensaje *user*) y devuelve la respuesta limpia de Markdown (`PlainText`) |
+| `AiService.AskAsync` | Valida el prompt, arma `ChatRequest` (mensaje *system* académico + mensaje *user*) y devuelve la respuesta del modelo. `PlainText` quita el Markdown al copiar, compartir y en las vistas previas del historial |
 | `AiService.SendChatAsync` | Revisa la conectividad, lee la clave del proveedor activo, envía `POST {URL base}chat/completions` con `Authorization: Bearer` y `JsonContent`, reintenta hasta 2 veces ante 503/429 (esperas de 2 y 4 s), controla el tiempo de espera y la cancelación, y deserializa `ChatResponse` |
 | `AiService.CreateHttpErrorAsync` | Convierte los códigos HTTP (400 de clave inválida de Google, 401, 402, 404, 429, 5xx…) en `AiServiceException` con un mensaje comprensible más el motivo del proveedor (acepta errores en objeto o en arreglo JSON) |
 | `AiService.TestConnectionAsync` | Consulta breve para el botón "Probar conexión" |
@@ -153,7 +153,9 @@ classDiagram
 | Errores tipados (`AiErrorKind`) | Mensajes claros por cada caso sin exponer detalles técnicos ni la clave. |
 | Proveedor seleccionable, modelo configurable y lista dinámica | Reduce la dependencia del proveedor. Se agregó Google Gemini cuando el equipo obtuvo una clave de Google (F5). |
 | Reintento automático ante 503/429 | En las pruebas, Gemini respondió 503 por saturación con frecuencia. Dos reintentos con espera creciente resuelven la mayoría sin intervención (F9). |
-| Limpieza de Markdown en el código, no en el prompt | Pedirle al modelo "sin Markdown" hizo que omitiera las tildes (F8). `PlainText` quita `#`, `**`, `---` y convierte viñetas a `•`. |
+| Markdown interpretado en la vista, no en el prompt | Pedirle al modelo "sin Markdown" hizo que omitiera las tildes (F8). La respuesta se guarda tal como llega y `MarkdownToFormattedStringConverter` la muestra con títulos, negritas y viñetas (F16). `PlainText` quita `#`, `**`, `---` para copiar, compartir y las vistas previas. |
+| Identidad visual propia | Paleta verde azulado con contraste WCAG AA verificado en tema claro y oscuro, fuente Inter, íconos Material Icons Round (fuentes con licencia OFL / Apache 2.0), ícono y splash propios. Los colores de estado usan `AppThemeBinding` + `DataTrigger` sobre `IsError` (F17). |
+| Consulta en formato de conversación | `ChatPage` muestra cada consulta como burbuja del usuario y la respuesta como burbuja de la IA (`ChatExchangeViewModel`). Cada respuesta tiene Copiar, Compartir y Guardar; `IClipboard` e `IShare` se inyectan desde `MauiProgram`. |
 | Plantillas en SQLite | Son editables (RF07) y persisten. |
 | Bindings compilados (`x:DataType`) + XAML `SourceGen` | Errores de enlace detectados al compilar y mejor rendimiento. |
 | Diseño responsive | `FlexLayout Wrap` en filas de controles, `MaximumWidthRequest="1000"` en todas las páginas, lista y formulario lado a lado en pantallas anchas, `Grid` con columna `*` para textos largos. Verificado en 400, 820 y 1400 px (F3, F11–F15). |

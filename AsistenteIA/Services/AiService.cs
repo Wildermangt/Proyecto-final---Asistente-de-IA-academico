@@ -61,12 +61,14 @@ public class AiService
 
         ChatResponse? result = await SendChatAsync(body, userToken);
         string? answer = result?.Choices.FirstOrDefault()?.Message.Content;
+        // Se conserva el Markdown del modelo: la vista lo muestra con formato (MarkdownToFormattedStringConverter)
+        // y PlainText se usa al copiar, compartir y en las vistas previas del historial.
         return string.IsNullOrWhiteSpace(answer)
             ? "El servicio no devolvió contenido."
-            : PlainText(answer);
+            : answer.Trim();
     }
 
-    // La interfaz muestra texto plano: se quitan los símbolos Markdown que algunos modelos agregan igual.
+    // Texto sin símbolos Markdown (#, **, ---, viñetas a •) para copiar, compartir y vistas previas.
     public static string PlainText(string text)
     {
         var lines = text.Replace("\r\n", "\n").Split('\n');

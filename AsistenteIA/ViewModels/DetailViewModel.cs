@@ -10,9 +10,11 @@ public partial class DetailViewModel : ObservableObject, IQueryAttributable
 {
     private readonly DatabaseService _database;
     private readonly IDialogService _dialogs;
+    private readonly IClipboard _clipboard;
+    private readonly IShare _share;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(VerificationText), nameof(VerifyButtonText))]
+    [NotifyPropertyChangedFor(nameof(VerificationText), nameof(VerifyButtonText), nameof(IsVerified))]
     private ConversationRecord? record;
 
     [ObservableProperty] private string selectedCategory = "General";
@@ -22,12 +24,15 @@ public partial class DetailViewModel : ObservableObject, IQueryAttributable
     public string VerificationText => Record?.IsVerified == true
         ? "✔ Verificada: el usuario contrastó la respuesta con fuentes confiables."
         : "⚠ Sin verificar: contraste la respuesta antes de usarla.";
+    public bool IsVerified => Record?.IsVerified == true;
     public string VerifyButtonText => Record?.IsVerified == true ? "Quitar verificación" : "Marcar como verificada";
 
-    public DetailViewModel(DatabaseService database, IDialogService dialogs)
+    public DetailViewModel(DatabaseService database, IDialogService dialogs, IClipboard clipboard, IShare share)
     {
         _database = database;
         _dialogs = dialogs;
+        _clipboard = clipboard;
+        _share = share;
     }
 
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -50,6 +55,7 @@ public partial class DetailViewModel : ObservableObject, IQueryAttributable
         await _database.SaveAsync(Record);
         OnPropertyChanged(nameof(VerificationText));
         OnPropertyChanged(nameof(VerifyButtonText));
+        OnPropertyChanged(nameof(IsVerified));
         StatusMessage = Record.IsVerified ? "Marcada como verificada." : "Marca de verificación retirada.";
     }
 
@@ -74,8 +80,31 @@ public partial class DetailViewModel : ObservableObject, IQueryAttributable
     {
         if (Record is null)
             return;
-        await Clipboard.Default.SetTextAsync(Record.Answer);
+        await _clipboard.SetTextAsync(AiService.PlainText(Record.Answer));
         StatusMessage = "Respuesta copiada al portapapeles.";
+    }
+
+    [RelayCommand]
+    private async Task ShareAsync()
+    {
+        if (Record is null)
+            return;
+        try
+        {
+            // Se comparte con el estado de verificación (uso responsable).
+            await _share.RequestAsync(new ShareTextRequest
+            {
+                Title = "Respuesta de AsistenteIA",
+                Text = $"Pregunta: {Record.Prompt}\n\n{AiService.PlainText(Record.Answer)}\n\n" +
+                       (Record.IsVerified
+                           ? "Respuesta generada por IA y contrastada por el usuario con fuentes confiables."
+                           : "Respuesta generada por IA, sin verificar: contrástela con fuentes confiables antes de usarla.")
+            });
+        }
+        catch (Exception)
+        {
+            StatusMessage = "No fue posible abrir el menú de compartir en este dispositivo.";
+        }
     }
 
     [RelayCommand]

@@ -61,8 +61,7 @@ La pantalla de **Inicio** muestra:
 
 - el propósito de la aplicación;
 - un aviso amarillo si todavía no hay clave configurada;
-- **accesos rápidos**: Consultar IA, Ver historial, Configuración y Plantillas;
-- un resumen de su historial (conversaciones guardadas y verificadas);
+- **accesos rápidos** en tarjetas: Consultar IA, Historial (con el resumen de conversaciones guardadas y verificadas), Plantillas y Configuración;
 - recomendaciones de uso responsable.
 
 ![Inicio](evidencias/04-pantalla-inicio.png)
@@ -85,26 +84,27 @@ En pantallas pequeñas, las pestañas que no caben se agrupan en el botón **⋯
    - *Revisar redacción:* ortografía y claridad.
 3. Elija una **Categoría** (General, Programación, Matemáticas, Ciencias, Redacción, Estudio).
 4. Escriba su pregunta, entre 5 y 2000 caracteres. El contador inferior muestra la longitud.
-5. Pulse **Consultar**. Mientras espera, verá un indicador de carga y el mensaje "Consultando el servicio…".
-6. Si tarda demasiado, pulse **Cancelar**.
+5. Pulse **Consultar**. Su pregunta aparece como burbuja a la derecha; mientras espera, la burbuja de la IA muestra "Pensando la respuesta…" y el mensaje de estado dice "Consultando el servicio…".
+6. Si tarda demasiado, pulse **Cancelar** (aparece en lugar de Consultar mientras se espera). Si la consulta se cancela o falla, su texto vuelve al editor para reintentar.
 
 ![Consultar](evidencias/05-pantalla-consultar.png)
 
-Para crear o modificar plantillas, pulse **Editar plantillas**. Seleccione una de la lista para editarla o pulse **Nueva**. Use `{consulta}` donde debe ir su pregunta.
+Para crear o modificar plantillas, pulse **Plantillas**. Seleccione una de la lista para editarla o pulse **Nueva**. Use `{consulta}` donde debe ir su pregunta.
 
 ### 3.2 Interpretación de resultados
 
-- La respuesta aparece en el recuadro **Respuesta**.
+- La respuesta aparece en la burbuja de **AsistenteIA**, con títulos, negritas y viñetas cuando el modelo los usa. Las consultas de la sesión se acumulan como una conversación.
 - Debajo hay un aviso: *"Respuesta generada por IA: puede contener errores. Contrástela con fuentes confiables…"*.
 - El mensaje de estado indica el resultado: en gris si fue correcto, en rojo si hubo un problema. También muestra el modelo usado.
 - **La IA no entrega fuentes verificadas.** Si menciona autores o referencias, búsquelas antes de citarlas.
-- Pulse **Guardar** para enviar la consulta y la respuesta al **Historial**, o **Limpiar** para empezar de nuevo.
+- Debajo de cada respuesta: **Copiar** (al portapapeles), **Compartir** (con otra aplicación, incluye el aviso de verificación) y **Guardar** (la envía al **Historial**; el botón cambia a *Guardada*).
+- **Limpiar** (arriba a la derecha) borra la conversación de la pantalla para empezar de nuevo; no afecta el historial.
 
-En **Historial → Ver** (pantalla de detalle) puede:
+En **Historial**, toque una tarjeta para abrir el detalle. Para eliminar use el ícono de papelera o, en el teléfono, deslice la tarjeta hacia la izquierda. En el detalle puede:
 
 - **Marcar como verificada** la respuesta, después de contrastarla.
 - Cambiar la **categoría**.
-- **Copiar** la respuesta al portapapeles.
+- **Copiar** la respuesta al portapapeles o **Compartirla**.
 - **Eliminar** la conversación.
 
 ### 3.3 Filtros y opciones avanzadas

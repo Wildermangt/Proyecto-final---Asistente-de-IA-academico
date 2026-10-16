@@ -8,33 +8,27 @@ namespace AsistenteIA.ViewModels;
 
 public partial class ChatViewModel : ObservableObject
 {
+    private const string ReadyMessage = "Elija una plantilla, escriba su consulta y pulse Consultar.";
+
     private readonly AiService _aiService;
     private readonly DatabaseService _database;
     private readonly SettingsService _settings;
     private readonly IDialogService _dialogs;
+    private readonly IClipboard _clipboard;
+    private readonly IShare _share;
     private CancellationTokenSource? _cts;
-    private string _lastPromptSent = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CharCountText))]
     private string prompt = string.Empty;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasAnswer))]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string answer = string.Empty;
-
-    [ObservableProperty] private string statusMessage = "Escriba una consulta académica y pulse Consultar.";
+    [ObservableProperty] private string statusMessage = ReadyMessage;
     [ObservableProperty] private bool isError;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNotBusy))]
-    [NotifyCanExecuteChangedFor(nameof(AskCommand), nameof(CancelCommand), nameof(SaveCommand))]
+    [NotifyCanExecuteChangedFor(nameof(AskCommand), nameof(CancelCommand), nameof(ClearCommand))]
     private bool isBusy;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private bool isSaved;
 
     [ObservableProperty] private PromptTemplate? selectedTemplate;
     [ObservableProperty] private string selectedCategory = "General";
@@ -43,16 +37,21 @@ public partial class ChatViewModel : ObservableObject
     public ObservableCollection<PromptTemplate> Templates { get; } = [];
     public IReadOnlyList<string> CategoryOptions => Categories.All;
 
+    // Intercambios de la sesión actual (pregunta + respuesta), en orden de envío.
+    public ObservableCollection<ChatExchangeViewModel> Exchanges { get; } = [];
+
     public bool IsNotBusy => !IsBusy;
-    public bool HasAnswer => !string.IsNullOrWhiteSpace(Answer);
     public string CharCountText => $"{Prompt?.Trim().Length ?? 0} / {AiService.MaxPromptLength}";
 
-    public ChatViewModel(AiService aiService, DatabaseService database, SettingsService settings, IDialogService dialogs)
+    public ChatViewModel(AiService aiService, DatabaseService database, SettingsService settings,
+        IDialogService dialogs, IClipboard clipboard, IShare share)
     {
         _aiService = aiService;
         _database = database;
         _settings = settings;
         _dialogs = dialogs;
+        _clipboard = clipboard;
+        _share = share;
     }
 
     // Se ejecuta al aparecer la página: recarga plantillas (pueden haberse editado) y el modelo actual.
@@ -92,29 +91,42 @@ public partial class ChatViewModel : ObservableObject
             return;
         }
 
+        // La pregunta aparece de inmediato como burbuja y la respuesta queda "pendiente" mientras llega.
+        var exchange = new ChatExchangeViewModel
+        {
+            UserText = Prompt.Trim(),
+            SentPrompt = finalPrompt,
+            Category = SelectedCategory,
+            Model = _settings.SelectedModel,
+            TemplateName = SelectedTemplate?.Name ?? string.Empty
+        };
+        Exchanges.Add(exchange);
+        Prompt = string.Empty;
+
         _cts?.Dispose();
         _cts = new CancellationTokenSource();
         IsBusy = true;
-        IsSaved = false;
-        Answer = string.Empty;
         SetStatus($"Consultando el servicio ({_settings.SelectedModel})...", isError: false);
 
         try
         {
-            Answer = await _aiService.AskAsync(finalPrompt, _settings.SelectedModel, _cts.Token);
-            _lastPromptSent = finalPrompt;
+            exchange.Answer = await _aiService.AskAsync(finalPrompt, _settings.SelectedModel, _cts.Token);
+            exchange.IsPending = false;
             SetStatus("Respuesta recibida. Verifique la información con fuentes confiables antes de usarla.", isError: false);
         }
         catch (OperationCanceledException)
         {
+            RestorePrompt(exchange);
             SetStatus("Consulta cancelada por el usuario. Puede enviarla de nuevo.", isError: true);
         }
         catch (AiServiceException ex)
         {
+            RestorePrompt(exchange);
             SetStatus(ex.Message, isError: true);
         }
         catch (Exception)
         {
+            RestorePrompt(exchange);
             SetStatus("Ocurrió un error inesperado. Intente de nuevo.", isError: true);
         }
         finally
@@ -123,34 +135,72 @@ public partial class ChatViewModel : ObservableObject
         }
     }
 
+    // Si la consulta falla o se cancela, se retira la burbuja y el texto vuelve al editor para reintentar.
+    private void RestorePrompt(ChatExchangeViewModel exchange)
+    {
+        Exchanges.Remove(exchange);
+        Prompt = exchange.UserText;
+    }
+
     [RelayCommand(CanExecute = nameof(IsBusy))]
     private void Cancel() => _cts?.Cancel();
 
-    private bool CanSave() => HasAnswer && !IsBusy && !IsSaved;
-
-    [RelayCommand(CanExecute = nameof(CanSave))]
-    private async Task SaveAsync()
+    // RF05: cada respuesta de la sesión puede guardarse en SQLite.
+    [RelayCommand]
+    private async Task SaveAsync(ChatExchangeViewModel? exchange)
     {
+        if (exchange is null || !exchange.HasAnswer || exchange.IsSaved)
+            return;
+
         var record = new ConversationRecord
         {
-            Prompt = _lastPromptSent,
-            Answer = Answer,
-            Category = SelectedCategory,
-            Model = _settings.SelectedModel,
+            Prompt = exchange.SentPrompt,
+            Answer = exchange.Answer,
+            Category = exchange.Category,
+            Model = exchange.Model,
             CreatedAt = DateTime.UtcNow
         };
         await _database.SaveAsync(record);
-        IsSaved = true;
+        exchange.IsSaved = true;
         SetStatus($"Conversación guardada en el historial (registro #{record.Id}).", isError: false);
     }
 
     [RelayCommand]
+    private async Task CopyAsync(ChatExchangeViewModel? exchange)
+    {
+        if (exchange is null || !exchange.HasAnswer)
+            return;
+        await _clipboard.SetTextAsync(AiService.PlainText(exchange.Answer));
+        SetStatus("Respuesta copiada al portapapeles.", isError: false);
+    }
+
+    [RelayCommand]
+    private async Task ShareAsync(ChatExchangeViewModel? exchange)
+    {
+        if (exchange is null || !exchange.HasAnswer)
+            return;
+        try
+        {
+            // Se comparte con el aviso de verificación (uso responsable).
+            await _share.RequestAsync(new ShareTextRequest
+            {
+                Title = "Respuesta de AsistenteIA",
+                Text = $"Pregunta: {exchange.UserText}\n\n{AiService.PlainText(exchange.Answer)}\n\n" +
+                       "Respuesta generada por IA: verifíquela con fuentes confiables antes de usarla."
+            });
+        }
+        catch (Exception)
+        {
+            SetStatus("No fue posible abrir el menú de compartir en este dispositivo.", isError: true);
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(IsNotBusy))]
     private void Clear()
     {
         Prompt = string.Empty;
-        Answer = string.Empty;
-        IsSaved = false;
-        SetStatus("Escriba una consulta académica y pulse Consultar.", isError: false);
+        Exchanges.Clear();
+        SetStatus(ReadyMessage, isError: false);
     }
 
     [RelayCommand]

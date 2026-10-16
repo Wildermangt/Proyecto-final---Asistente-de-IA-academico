@@ -56,3 +56,5 @@
 | F13 | Ancho inconsistente en escritorio | Revisión de responsive | Solo algunas páginas tenían ancho máximo | `MaximumWidthRequest="1000"` en todas las páginas |
 | F14 | En tablet y escritorio, Plantillas mostraba solo 3 elementos | Revisión de responsive | El formulario ocupaba casi todo el alto | Lista y formulario lado a lado en pantallas anchas; apilados en angostas |
 | F15 | Los mensajes de estado largos se cortaban en Configuración | A08 | `HorizontalStackLayout` da ancho infinito a la etiqueta | `Grid` con columna `*` |
+| F16 | Las respuestas perdían títulos, negritas y listas al limpiarse el Markdown | Revisión de interfaz | `PlainText` quitaba el formato antes de mostrar | El Markdown se conserva y un conversor lo muestra con formato; `PlainText` queda para copiar, compartir y vistas previas |
+| F17 | En tema oscuro el mensaje de estado (#404040) casi no se leía y el aviso amarillo no cambiaba de color | Revisión de interfaz | Colores fijos sin variante oscura | `AppThemeBinding` en el estilo `StatusLabel` y en `WarningCard`; el rojo de error se activa con `DataTrigger` |
