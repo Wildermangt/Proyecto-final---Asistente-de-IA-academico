@@ -1,64 +1,191 @@
-# 02. Arquitectura y decisiones técnicas
+# 02. Arquitectura del sistema
 
-## Capas (MVVM)
+AsistenteIA es un asistente académico con inteligencia artificial que consume servicios REST y está organizado en módulos. La solución se divide en cinco componentes. Cada uno corresponde a carpetas y clases concretas del proyecto `AsistenteIA/`.
 
 ```mermaid
 flowchart TB
-    subgraph Views [Views · XAML]
-        HP[HomePage] --- CP[ChatPage] --- HiP[HistoryPage] --- DP[DetailPage] --- SP[SettingsPage] --- TP[TemplatesPage]
+    subgraph P [1. Capa de presentación · Views + ViewModels]
+        V[HomePage · ChatPage · HistoryPage · DetailPage · SettingsPage · TemplatesPage]
+        VM[HomeVM · ChatVM · HistoryVM · DetailVM · SettingsVM · TemplatesVM]
+        V -- Binding / Command --> VM
     end
-    subgraph ViewModels [ViewModels · estado y comandos]
-        HVM[HomeVM] --- CVM[ChatVM] --- HiVM[HistoryVM] --- DVM[DetailVM] --- SVM[SettingsVM] --- TVM[TemplatesVM]
+    subgraph S [2. Servicios y consumo REST]
+        AI[AiService]
+        HC[HttpClient singleton]
+        AI --> HC
     end
-    subgraph Services [Services]
-        AI[AiService] --- KEY[ApiKeyService] --- SET[SettingsService] --- DB[DatabaseService] --- DLG[IDialogService]
+    subgraph L [3. Lógica de negocio y estructura · Models]
+        M[ChatRequest · ChatResponse · ConversationRecord · PromptTemplate · Categories · AiServiceException]
     end
-    subgraph Externos
-        API[(API Pollinations\nREST/JSON)] --- SQL[(SQLite\nasistenteia.db3)] --- SEC[(SecureStorage)]
+    subgraph R [4. Persistencia / repositorio]
+        DB[DatabaseService]
+        SQL[(SQLite asistenteia.db3)]
+        PR[SettingsService → Preferences]
+        DB --> SQL
     end
-    Views -- Binding / Command --> ViewModels
-    ViewModels --> Services
-    AI --> API
-    DB --> SQL
-    KEY --> SEC
+    subgraph SEC [5. Seguridad y privacidad]
+        K[ApiKeyService → SecureStorage]
+        CN[IConnectivity]
+    end
+    VM --> AI
+    VM --> DB
+    VM --> PR
+    AI --> K
+    AI --> CN
+    HC -- HTTPS POST JSON --> API[(API Pollinations\n/v1/chat/completions)]
+    M -. usado por .- S
+    M -. usado por .- R
 ```
 
-| Carpeta | Responsabilidad |
-|---|---|
-| `Models` | Clases que representan el JSON (`ChatRequest`, `ChatResponse`, `ApiErrorResponse`, `ModelListResponse`) y las entidades locales (`ConversationRecord`, `PromptTemplate`). |
-| `Services` | Acceso a la API (`AiService`), clave segura (`ApiKeyService`), preferencias (`SettingsService`), base de datos (`DatabaseService`) y diálogos y navegación (`IDialogService`). |
-| `ViewModels` | Estado observable y comandos. No conocen las vistas: los diálogos se piden por `IDialogService`. |
-| `Views` | Solo XAML y enlaces. El code-behind recibe el ViewModel por constructor y llama a `LoadCommand` en `OnAppearing`. |
+---
 
-## Recorrido completo de una consulta (XAML → ViewModel → REST → JSON → SQLite)
+## 1. Capa de presentación (cliente)
 
-1. **XAML.** En `ChatPage.xaml`, el `Editor` está enlazado a `Prompt` y el botón Consultar a `AskCommand`.
-2. **ViewModel.** `ChatViewModel.AskAsync` valida con `AiService.ValidatePrompt`, aplica la plantilla (`PromptTemplate.Apply`), crea un `CancellationTokenSource` y pone `IsBusy = true`. El indicador de carga se activa y Cancelar se habilita.
-3. **Servicio REST.** `AiService.SendChatAsync` revisa la conectividad (`IConnectivity`), lee la clave de `SecureStorage`, arma un `HttpRequestMessage` POST a `chat/completions` con el encabezado `Authorization: Bearer` y un cuerpo `JsonContent.Create(ChatRequest)`.
-4. **JSON.** Si la respuesta es exitosa, se deserializa con `ReadFromJsonAsync<ChatResponse>` y se toma `choices[0].message.content`. Si el código HTTP es de error, `CreateHttpErrorAsync` lee `ApiErrorResponse` y lo convierte en una `AiServiceException` con un mensaje para el usuario.
-5. **Vista.** `Answer` y `StatusMessage` cambian, y el binding actualiza la pantalla.
-6. **SQLite.** Guardar ejecuta `SaveAsync`, que crea un `ConversationRecord` y llama a `DatabaseService.SaveAsync` (`InsertAsync`). El historial lo lee con `Table<ConversationRecord>().Where(...).OrderByDescending(...).ToListAsync()`.
+Es la interfaz donde el usuario escribe sus consultas y ve las respuestas de la IA. Usa XAML con el patrón **MVVM**: la vista solo enlaza propiedades y comandos y nunca hace solicitudes HTTP.
 
-## Inyección de dependencias (`MauiProgram.cs`)
-
-| Registro | Ciclo de vida | Motivo |
+| Pantalla (`Views/`) | ViewModel (`ViewModels/`) | Función |
 |---|---|---|
-| `HttpClient` (BaseAddress `https://gen.pollinations.ai/v1/`) | Singleton | Reutilizar conexiones y evitar el agotamiento de sockets. |
-| `IConnectivity`, `IPreferences` | Singleton | APIs de la plataforma inyectables. |
-| `ApiKeyService`, `SettingsService`, `AiService`, `DatabaseService`, `IDialogService` | Singleton | Sin estado por pantalla; una sola conexión SQLite. |
-| ViewModels y Pages | Transient | Estado nuevo por cada navegación. |
+| `HomePage` | `HomeViewModel` | Propósito de la app, accesos rápidos, resumen del historial y recomendaciones de uso |
+| `ChatPage` | `ChatViewModel` | Escribir la consulta, elegir plantilla y categoría, consultar, cancelar, guardar |
+| `HistoryPage` | `HistoryViewModel` | Listar, buscar, filtrar por categoría y eliminar conversaciones |
+| `DetailPage` | `DetailViewModel` | Ver prompt, respuesta, fecha, categoría y verificación. Marcar como verificada |
+| `SettingsPage` | `SettingsViewModel` | Clave, modelo, tiempo de espera y sección Acerca de |
+| `TemplatesPage` | `TemplatesViewModel` | CRUD de plantillas de prompts |
 
-## Decisiones técnicas
+- **Navegación:** `AppShell` con un `TabBar` (Inicio, Consultar, Historial, Configuración) y rutas registradas (`detail?id=`, `templates`).
+- **Estado y comandos:** CommunityToolkit.Mvvm (`[ObservableProperty]`, `[RelayCommand]` con `CanExecute`).
+- **Diseño adaptable:** `FlexLayout Wrap`, `ScrollView` y estilos en `Resources/Styles`.
+- **Accesibilidad:** `SemanticProperties` y `AutomationId` en los controles.
+- **Desacople:** los diálogos y la navegación se piden por `IDialogService`, así los ViewModels no dependen de las páginas.
+
+## 2. Capa de servicios y consumo REST
+
+Conecta el cliente con el modelo de IA mediante la API REST de Pollinations, compatible con OpenAI Chat Completions.
+
+| Clase | Responsabilidad |
+|---|---|
+| `AiService.AskAsync` | Valida el prompt, arma `ChatRequest` (mensaje *system* académico + mensaje *user*) y devuelve el texto de la respuesta |
+| `AiService.SendChatAsync` | Revisa la conectividad, lee la clave, envía `POST chat/completions` con `Authorization: Bearer` y `JsonContent`, controla el tiempo de espera y la cancelación, y deserializa `ChatResponse` |
+| `AiService.CreateHttpErrorAsync` | Convierte los códigos HTTP (401, 402, 429, 5xx…) en `AiServiceException` con mensajes comprensibles |
+| `AiService.TestConnectionAsync` | Consulta breve para el botón "Probar conexión" |
+| `AiService.GetModelsAsync` | `GET /v1/models` (público), filtra modelos de texto gratuitos y usa una lista local si no hay conexión |
+| `HttpClient` (singleton en `MauiProgram`) | `BaseAddress = https://gen.pollinations.ai/v1/`. Reutiliza conexiones |
+
+El detalle de solicitud, respuesta y códigos HTTP está en [03-api-rest.md](03-api-rest.md).
+
+## 3. Capa de lógica de negocio y estructura
+
+Contiene las reglas del dominio, los modelos y las decisiones de diseño.
+
+**Reglas de negocio**
+- La consulta debe tener entre 5 y 2000 caracteres (`AiService.ValidatePrompt`). Se valida en el ViewModel antes de enviar y otra vez en el servicio.
+- La plantilla elegida se aplica reemplazando `{consulta}` (`PromptTemplate.Apply`). Si el resultado supera 2000 caracteres, se rechaza.
+- Solo se guarda una respuesta recibida y no se guarda dos veces (`ChatViewModel.CanSave`).
+- Una respuesta solo se marca como verificada por acción explícita del usuario después de contrastarla con fuentes.
+- El tiempo de espera es configurable (de 1 a 120 s) y distinto de la cancelación manual.
+
+### Diagrama de clases
+
+```mermaid
+classDiagram
+    direction LR
+    class ChatRequest { +string Model; +List~ChatMessage~ Messages }
+    class ChatMessage { +string Role; +string Content }
+    class ChatResponse { +List~ChatChoice~ Choices }
+    class ChatChoice { +ChatMessage Message }
+    class ApiErrorResponse { +ApiError Error }
+    class ApiError { +string Message; +string Code }
+    class ModelInfo { +string Id; +string Category; +bool PaidOnly }
+    class ConversationRecord { +int Id; +string Prompt; +string Answer; +DateTime CreatedAt; +string Category; +bool IsVerified; +string Model }
+    class PromptTemplate { +int Id; +string Name; +string Category; +string Text; +Apply(userText) string }
+    class AiServiceException { +AiErrorKind Kind; +HttpStatusCode? StatusCode }
+
+    class AiService { +ValidatePrompt(prompt)$ string; +AskAsync(prompt, model, token) Task~string~; +TestConnectionAsync() Task~string~; +GetModelsAsync() Task~IReadOnlyList~ }
+    class ApiKeyService { +SaveAsync(key); +GetAsync(); +Remove(); +HasKeyAsync(); +GetMaskedAsync() }
+    class SettingsService { +string SelectedModel; +int TimeoutSeconds }
+    class DatabaseService { +SaveAsync(record); +GetConversationsAsync(search, category); +GetConversationAsync(id); +DeleteAsync(record); +GetTemplatesAsync(); +SaveTemplateAsync(t); +DeleteTemplateAsync(t) }
+    class IDialogService { <<interface>> +ConfirmAsync(); +AlertAsync(); +GoToAsync() }
+
+    class ChatViewModel { +Prompt; +Answer; +StatusMessage; +IsBusy; +AskCommand; +CancelCommand; +SaveCommand }
+    class HistoryViewModel { +Records; +SearchText; +SelectedCategory; +DeleteCommand; +OpenCommand }
+    class DetailViewModel { +Record; +ToggleVerifiedCommand; +DeleteCommand }
+    class SettingsViewModel { +ApiKeyInput; +MaskedKey; +Models; +SaveKeyCommand; +TestConnectionCommand }
+    class TemplatesViewModel { +Templates; +SaveCommand; +DeleteCommand }
+
+    ChatRequest "1" o-- "*" ChatMessage
+    ChatResponse "1" o-- "*" ChatChoice
+    ChatChoice --> ChatMessage
+    ApiErrorResponse --> ApiError
+    AiService ..> ChatRequest : envía
+    AiService ..> ChatResponse : recibe
+    AiService ..> AiServiceException : lanza
+    AiService --> ApiKeyService
+    AiService --> SettingsService
+    DatabaseService ..> ConversationRecord
+    DatabaseService ..> PromptTemplate
+    ChatViewModel --> AiService
+    ChatViewModel --> DatabaseService
+    HistoryViewModel --> DatabaseService
+    DetailViewModel --> DatabaseService
+    SettingsViewModel --> ApiKeyService
+    SettingsViewModel --> AiService
+    TemplatesViewModel --> DatabaseService
+    ChatViewModel --> IDialogService
+    HistoryViewModel --> IDialogService
+```
+
+### Recorrido de una consulta (XAML → ViewModel → REST → JSON → SQLite)
+
+1. **XAML.** En `ChatPage`, el `Editor` está enlazado a `Prompt` y el botón Consultar a `AskCommand`.
+2. **ViewModel.** `ChatViewModel.AskAsync` valida, aplica la plantilla, crea un `CancellationTokenSource` y pone `IsBusy = true`.
+3. **REST.** `AiService.SendChatAsync` envía el POST con Bearer y el JSON.
+4. **JSON.** `ReadFromJsonAsync<ChatResponse>` devuelve `choices[0].message.content`. Si hay error HTTP, se lanza `AiServiceException`.
+5. **Vista.** `Answer` y `StatusMessage` cambian y el binding refresca la pantalla.
+6. **SQLite.** El comando Guardar crea un `ConversationRecord` y llama a `DatabaseService.SaveAsync` (`InsertAsync`).
+
+### Decisiones técnicas
 
 | Decisión | Justificación |
 |---|---|
-| La clave la ingresa el usuario y se guarda en `SecureStorage` | Cumple el principio técnico de la guía: ninguna clave en el código ni en el repositorio. En Windows se cifra con DPAPI y en Android con Keystore. |
-| Tiempo de espera propio en `AiService` (CTS enlazado) en lugar de solo `HttpClient.Timeout` | Permite distinguir **cancelación del usuario** (P06) de **tiempo agotado** (P05) y mostrar mensajes distintos. El valor se configura en la app. |
-| Errores tipados (`AiServiceException` con `AiErrorKind`) | El ViewModel muestra mensajes claros (401 clave inválida, 402 saldo agotado, 429 límite, 5xx servicio caído) sin exponer detalles técnicos ni la clave. |
-| Validación en el ViewModel antes de llamar al servicio | No se gasta una solicitud HTTP en un prompt inválido (P02). El servicio vuelve a validar por defensa. |
-| Modelo configurable y lista desde `GET /v1/models` | Reduce la dependencia del proveedor: si cambian los modelos, la app los muestra sin recompilar. Si no hay conexión, usa una lista local. |
-| Plantillas en SQLite | Así son editables (RF07) y persisten como el historial. |
-| `IDialogService` | Los ViewModels no dependen de `Page` ni de `Shell`, lo que mantiene la separación MVVM. |
-| Bindings compilados (`x:DataType`) e inflado XAML `SourceGen` | Errores de enlace detectados al compilar y mejor rendimiento. |
-| `FlexLayout` con `Wrap` en filas de botones y selectores | La interfaz se adapta a pantallas angostas. Lo detectó la prueba P10 y se corrigió. |
-| `SQLitePCLRaw.lib.e_sqlite3` 2.1.14 fijado | La versión transitiva 2.1.11 tenía una vulnerabilidad alta conocida (GHSA-2m69-gcr7-jv3q). |
+| MVVM + inyección de dependencias | Separa la interfaz, el estado y el acceso a datos. Todo se registra en `MauiProgram.cs`: servicios como singleton, ViewModels y páginas como transient. |
+| Un solo `HttpClient` | Evita el agotamiento de sockets y centraliza la URL base. |
+| Tiempo de espera propio con CTS enlazado | Distingue el tiempo agotado (P05) de la cancelación manual (P06). |
+| Errores tipados (`AiErrorKind`) | Mensajes claros por cada caso sin exponer detalles técnicos ni la clave. |
+| Modelo configurable y lista dinámica | Reduce la dependencia del proveedor. |
+| Plantillas en SQLite | Son editables (RF07) y persisten. |
+| Bindings compilados (`x:DataType`) + XAML `SourceGen` | Errores de enlace detectados al compilar y mejor rendimiento. |
+| `FlexLayout Wrap` | Diseño adaptable a pantallas pequeñas (corrección hecha a partir de P10). |
+
+## 4. Capa de persistencia / repositorio
+
+Controla el acceso a los datos locales: consultas, historial, plantillas y configuración.
+
+| Dato | Almacén | Clase | Operaciones |
+|---|---|---|---|
+| Historial de conversaciones | SQLite, tabla `ConversationRecord` | `DatabaseService` | Crear (`InsertAsync`), consultar con búsqueda y filtro por categoría (`Table<T>().Where().ToListAsync`), actualizar verificación y categoría (`UpdateAsync`), eliminar (`DeleteAsync`) |
+| Plantillas de prompts | SQLite, tabla `PromptTemplate` | `DatabaseService` | CRUD completo y seis plantillas iniciales |
+| Modelo y tiempo de espera | `Preferences` | `SettingsService` | Lectura y escritura |
+| Clave de la API | `SecureStorage` | `ApiKeyService` | Ver la capa 5 |
+
+- **Ubicación:** `FileSystem.AppDataDirectory/asistenteia.db3`. Persiste entre reinicios (P09).
+- **Inicialización:** perezosa y segura entre hilos (`SemaphoreSlim`), en el primer acceso. Crea tablas e índice y siembra las plantillas.
+- **Repositorio de código:** Git con commits descriptivos por fase. `.gitignore` excluye `bin/`, `obj/`, `.vs/` y archivos de secretos.
+
+Esquema SQL completo en [07-manual-tecnico.md](07-manual-tecnico.md).
+
+## 5. Módulo de seguridad y privacidad
+
+Maneja los datos de forma segura y mitiga los riesgos de privacidad. La matriz completa está en [04-matriz-riesgos.md](04-matriz-riesgos.md).
+
+| Control | Implementación |
+|---|---|
+| Credencial fuera del código | La clave la ingresa el usuario. No hay claves en el código, la configuración ni el repositorio (verificado con `git grep`). |
+| Almacenamiento cifrado | `ApiKeyService` usa `SecureStorage` (DPAPI en Windows, Keystore en Android). |
+| La clave nunca se muestra | `Entry IsPassword="True"`, campo que se limpia al guardar y visualización enmascarada `••••1234`. No se registra en consola. |
+| Transporte seguro | HTTPS. La clave va en el encabezado `Authorization`, nunca en la URL. |
+| Minimización de datos | Avisos visibles para no ingresar datos personales. El historial vive solo en el dispositivo. No hay cuentas ni analítica. |
+| Control del historial | Eliminación con confirmación (registro por registro) y eliminación de la clave con confirmación. |
+| Uso responsable de la IA | Prompt de sistema académico ("no inventes fuentes"), aviso de verificación en cada respuesta, marca de "verificada" y sección de limitaciones. |
+| Robustez | Revisión de conectividad, manejo de todos los códigos HTTP, tiempo de espera y cancelación. La app no se cierra ante fallos de red. |
+| Dependencias | `dotnet list package --vulnerable` sin hallazgos (SQLite nativo fijado en 2.1.14). |
+| Control de acceso | No aplica: es una app personal y local, sin inicio de sesión. El acceso al servicio de IA lo autoriza la clave personal de cada usuario. |
