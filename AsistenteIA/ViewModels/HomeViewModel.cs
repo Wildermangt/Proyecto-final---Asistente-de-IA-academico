@@ -23,6 +23,7 @@ public partial class HomeViewModel : ObservableObject
     [RelayCommand]
     private async Task LoadAsync()
     {
+        await _keyService.MigrateLegacyKeyAsync();
         HasKey = await _keyService.HasKeyAsync();
         var records = await _database.GetConversationsAsync();
         int verified = records.Count(r => r.IsVerified);

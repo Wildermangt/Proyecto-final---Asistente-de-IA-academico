@@ -3,6 +3,7 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:AsistenteIA.ViewModels"
+             xmlns:models="clr-namespace:AsistenteIA.Models"
              x:DataType="vm:SettingsViewModel"
              Title="Configuración">
     <ScrollView>
@@ -18,7 +19,10 @@
             <!-- Clave de la API -->
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Clave de la API (Pollinations)" Style="{StaticResource SectionTitle}" />
+                    <Label Text="Proveedor y clave de la API" Style="{StaticResource SectionTitle}" />
+                    <Picker Title="Proveedor de IA" ItemsSource="{Binding Providers}" SelectedItem="{Binding SelectedProvider}"
+                            ItemDisplayBinding="{Binding Name, x:DataType=models:AiProvider}"
+                            AutomationId="SettingsProviderPicker" SemanticProperties.Description="Proveedor de inteligencia artificial" />
                     <Label Text="{Binding MaskedKey}" AutomationId="SettingsMaskedKey" />
                     <Entry IsPassword="True" Text="{Binding ApiKeyInput}" Placeholder="Pegue aquí su clave"
                            AutomationId="SettingsKeyEntry" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False"
@@ -55,7 +59,7 @@
                         <Entry Grid.Column="1" WidthRequest="90" Keyboard="Numeric" AutomationId="SettingsTimeoutEntry"
                                Text="{Binding TimeoutSeconds}" SemanticProperties.Description="Tiempo máximo de espera en segundos" />
                     </Grid>
-                    <Label Text="Endpoint: POST https://gen.pollinations.ai/v1/chat/completions" Style="{StaticResource Caption}" />
+                    <Label Text="{Binding ProviderInfo}" Style="{StaticResource Caption}" LineBreakMode="WordWrap" AutomationId="SettingsProviderInfo" />
                 </VerticalStackLayout>
             </Border>
 
@@ -73,11 +77,11 @@
                     </FormattedString></Label.FormattedText></Label>
                     <Label LineBreakMode="WordWrap"><Label.FormattedText><FormattedString>
                         <Span Text="Proveedor y fuentes: " FontAttributes="Bold" />
-                        <Span Text="API de Pollinations (gen.pollinations.ai), compatible con Chat Completions. Documentación de Microsoft Learn sobre .NET MAUI, inyección de dependencias y HttpClient." />
+                        <Span Text="API de Pollinations (gen.pollinations.ai) o API de Google Gemini (generativelanguage.googleapis.com), ambas compatibles con Chat Completions de OpenAI. Documentación de Microsoft Learn sobre .NET MAUI, inyección de dependencias y HttpClient." />
                     </FormattedString></Label.FormattedText></Label>
                     <Label LineBreakMode="WordWrap"><Label.FormattedText><FormattedString>
                         <Span Text="Privacidad: " FontAttributes="Bold" />
-                        <Span Text="las consultas se envían al proveedor externo para generar la respuesta. El historial se guarda solo en este dispositivo (SQLite) y la clave en almacenamiento seguro. No se recopilan datos personales." />
+                        <Span Text="las consultas se envían al proveedor externo elegido para generar la respuesta. El historial se guarda solo en este dispositivo (SQLite) y la clave en almacenamiento seguro. No se recopilan datos personales." />
                     </FormattedString></Label.FormattedText></Label>
                     <Label LineBreakMode="WordWrap"><Label.FormattedText><FormattedString>
                         <Span Text="Limitaciones: " FontAttributes="Bold" />

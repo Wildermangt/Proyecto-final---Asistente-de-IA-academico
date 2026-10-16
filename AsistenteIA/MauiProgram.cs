@@ -18,11 +18,10 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
-        // HttpClient reutilizable. El tiempo de espera por solicitud lo controla AiService
-        // (configurable); este valor es solo un límite de seguridad.
+        // HttpClient reutilizable. La URL depende del proveedor elegido (AiProvider) y el tiempo
+        // de espera por solicitud lo controla AiService; este valor es solo un límite de seguridad.
         builder.Services.AddSingleton(new HttpClient
         {
-            BaseAddress = new Uri(SettingsService.BaseUrl),
             Timeout = TimeSpan.FromSeconds(150)
         });
 

@@ -1,7 +1,13 @@
 # 03. Consumo de la API REST
 
-Proveedor: **Pollinations**, endpoint compatible con Chat Completions de OpenAI.
-Documentación: <https://gen.pollinations.ai/docs>
+La app admite dos proveedores con el mismo formato (Chat Completions de OpenAI). Se eligen en **Configuración → Proveedor de IA** (`Models/AiProvider.cs`):
+
+| Proveedor | URL base | Modelo por defecto | Claves |
+|---|---|---|---|
+| Pollinations | `https://gen.pollinations.ai/v1/` | `openai/gpt-5.4-nano` | <https://enter.pollinations.ai/keys> (`sk_…`) |
+| Google Gemini | `https://generativelanguage.googleapis.com/v1beta/openai/` | `gemini-3.8-flash` | <https://aistudio.google.com/apikey> (`AIza…`) |
+
+Cada proveedor guarda su propia clave en SecureStorage. Si la clave pegada tiene el prefijo de otro proveedor, la app selecciona ese proveedor automáticamente.
 
 ## Solicitud
 
@@ -46,6 +52,8 @@ Formato real devuelto por el proveedor (comprobado con una clave inválida):
 | Código / condición | Significado | Mensaje en la app | Prueba |
 |---|---|---|---|
 | 200 | Éxito | "Respuesta recibida. Verifique la información…" | P01 |
+| 400 + "API key" (Google) | Clave inválida (Google responde 400 `INVALID_ARGUMENT` con un **arreglo** JSON) | "Error 400: la clave no es válida para este proveedor…" | — |
+| 404 | Modelo inexistente para el proveedor | "Error 404: el modelo no existe para este proveedor…" | — |
 | 401 / 403 | Clave ausente, inválida o sin permisos | "Error 401: la clave no es válida o no tiene permisos. Actualícela en Configuración." | P04 |
 | 402 | Saldo o presupuesto de la clave agotado | "Error 402: el saldo o presupuesto de la clave se agotó." | — |
 | 429 | Demasiadas solicitudes | "Error 429: demasiadas solicitudes. Espere un momento…" | — |
@@ -57,9 +65,17 @@ Formato real devuelto por el proveedor (comprobado con una clave inválida):
 | Cancelación del usuario | Botón Cancelar | "Consulta cancelada por el usuario. Puede enviarla de nuevo." | P06 |
 | JSON inesperado | Formato distinto | "El servicio devolvió una respuesta con formato inesperado." | — |
 
+Formato de error de Google (comprobado con una clave falsa):
+
+```json
+[{ "error": { "code": 400, "message": "Please pass a valid API key", "status": "INVALID_ARGUMENT" } }]
+```
+
+`AiService.ExtractErrorMessage` acepta ambos formatos (objeto o arreglo) y añade el mensaje del proveedor al error, por ejemplo: "(Proveedor: Please pass a valid API key)". Ese mensaje nunca incluye la clave.
+
 ## Catálogo de modelos
 
-`GET https://gen.pollinations.ai/v1/models` es público (no requiere clave). La app filtra `category == "text"` y `paid_only == false`, y llena el selector de modelo en Configuración (`AiService.GetModelsAsync`).
+`GET {URL base}models`. En Pollinations es público y la app filtra `category == "text"` y `paid_only == false`. En Gemini requiere la clave; la app quita el prefijo `models/` y descarta los modelos de voz, imagen, audio y embeddings. Si la consulta falla, se usa la lista local del proveedor (`AiService.GetModelsAsync`).
 
 ## Seguridad del consumo
 

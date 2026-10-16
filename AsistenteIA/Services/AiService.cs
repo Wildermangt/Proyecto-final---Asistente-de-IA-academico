@@ -77,28 +77,50 @@ public class AiService
         return result?.Choices.FirstOrDefault()?.Message.Content?.Trim() ?? "(sin contenido)";
     }
 
-    // Catálogo público de modelos de texto gratuitos; si falla, se usa una lista local.
+    // Catálogo de modelos de texto del proveedor activo; si falla, se usa la lista local del proveedor.
     public async Task<IReadOnlyList<string>> GetModelsAsync(CancellationToken token = default)
     {
+        AiProvider provider = _settings.Provider;
         try
         {
             if (_connectivity.NetworkAccess == NetworkAccess.Internet)
             {
-                var list = await _client.GetFromJsonAsync<ModelListResponse>("models", token);
-                var ids = list?.Data
-                    .Where(m => m.Category == "text" && !m.PaidOnly)
-                    .Select(m => m.Id)
-                    .ToList();
-                if (ids is { Count: > 0 })
-                    return ids;
+                using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(new Uri(provider.BaseUrl), "models"));
+                string? apiKey = await _keyService.GetAsync();
+                if (!string.IsNullOrWhiteSpace(apiKey))
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(token);
+                cts.CancelAfter(TimeSpan.FromSeconds(15));
+                using HttpResponseMessage response = await _client.SendAsync(request, cts.Token);
+                if (response.IsSuccessStatusCode)
+                {
+                    var list = await response.Content.ReadFromJsonAsync<ModelListResponse>(cancellationToken: cts.Token);
+                    var ids = list?.Data.Where(m => IsTextModel(provider, m)).Select(m => NormalizeModelId(m.Id)).Distinct().ToList();
+                    if (ids is { Count: > 0 })
+                        return ids;
+                }
             }
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
         {
             // Se continúa con la lista local.
         }
-        return [SettingsService.DefaultModel, "openai/gpt-5.4-mini", "meta/llama-3.3-70b-instruct", "mistralai/mistral-large-3"];
+        return provider.FallbackModels;
     }
+
+    // Pollinations publica la categoría y si el modelo es de pago; Gemini solo el id.
+    private static bool IsTextModel(AiProvider provider, ModelInfo m)
+    {
+        if (provider == AiProvider.Pollinations)
+            return m.Category == "text" && !m.PaidOnly;
+        string id = m.Id.ToLowerInvariant();
+        string[] excluded = ["tts", "image", "live", "audio", "embedding", "transcribe", "translate", "aqa", "veo", "imagen"];
+        return id.Contains("gemini") && !excluded.Any(id.Contains);
+    }
+
+    private static string NormalizeModelId(string id) =>
+        id.StartsWith("models/", StringComparison.Ordinal) ? id["models/".Length..] : id;
 
     private async Task<ChatResponse?> SendChatAsync(ChatRequest body, CancellationToken userToken)
     {
@@ -109,13 +131,14 @@ public class AiService
         string? apiKey = await _keyService.GetAsync();
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new AiServiceException(AiErrorKind.MissingKey,
-                "Configure la clave de la API en la pestaña Configuración.");
+                $"Configure la clave de {_settings.Provider.Name} en la pestaña Configuración.");
 
         // Tiempo de espera propio para distinguirlo de la cancelación del usuario.
         using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(userToken, timeoutCts.Token);
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, "chat/completions");
+        var endpoint = new Uri(new Uri(_settings.Provider.BaseUrl), "chat/completions");
+        using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
         request.Content = JsonContent.Create(body);
 
@@ -150,27 +173,65 @@ public class AiService
         string? providerMessage = null;
         try
         {
-            var error = await response.Content.ReadFromJsonAsync<ApiErrorResponse>(cancellationToken: token);
-            providerMessage = error?.Error?.Message;
+            string raw = await response.Content.ReadAsStringAsync(token);
+            providerMessage = ExtractErrorMessage(raw);
         }
-        catch (Exception ex) when (ex is JsonException or NotSupportedException)
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
         {
-            // Cuerpo no JSON: se informa solo el código HTTP.
+            // Sin cuerpo legible: se informa solo el código HTTP.
         }
 
         int n = (int)code;
+        string detail = string.IsNullOrWhiteSpace(providerMessage) ? string.Empty : $" (Proveedor: {providerMessage})";
+
+        // Google responde 400 INVALID_ARGUMENT cuando la clave no es válida.
+        bool invalidKey = providerMessage?.Contains("API key", StringComparison.OrdinalIgnoreCase) == true;
+
         return code switch
         {
             HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => new AiServiceException(AiErrorKind.Unauthorized,
-                $"Error {n}: la clave no es válida o no tiene permisos. Actualícela en Configuración.", code),
+                $"Error {n}: la clave no es válida o no tiene permisos. Actualícela en Configuración.{detail}", code),
+            HttpStatusCode.BadRequest when invalidKey => new AiServiceException(AiErrorKind.Unauthorized,
+                $"Error {n}: la clave no es válida para este proveedor. Revise la clave o el proveedor en Configuración.{detail}", code),
             HttpStatusCode.PaymentRequired => new AiServiceException(AiErrorKind.PaymentRequired,
-                $"Error {n}: el saldo o presupuesto de la clave se agotó.", code),
+                $"Error {n}: el saldo o presupuesto de la clave se agotó.{detail}", code),
             HttpStatusCode.TooManyRequests => new AiServiceException(AiErrorKind.RateLimited,
-                $"Error {n}: demasiadas solicitudes. Espere un momento e intente de nuevo.", code),
+                $"Error {n}: demasiadas solicitudes o cuota agotada. Espere un momento e intente de nuevo.{detail}", code),
+            HttpStatusCode.NotFound => new AiServiceException(AiErrorKind.BadResponse,
+                $"Error {n}: el modelo no existe para este proveedor. Elija otro en Configuración.{detail}", code),
             _ when n >= 500 => new AiServiceException(AiErrorKind.ServerError,
-                $"Error {n}: el servicio de IA no está disponible en este momento.", code),
+                $"Error {n}: el servicio de IA no está disponible en este momento.{detail}", code),
             _ => new AiServiceException(AiErrorKind.BadResponse,
-                $"Error {n}: {providerMessage ?? "solicitud rechazada por el servicio."}", code)
+                $"Error {n}: solicitud rechazada por el servicio.{detail}", code)
         };
     }
+
+    // Admite {"error":{"message":...}} (OpenAI/Pollinations) y [{"error":{...}}] (Google).
+    private static string? ExtractErrorMessage(string raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return null;
+        try
+        {
+            using JsonDocument doc = JsonDocument.Parse(raw);
+            JsonElement root = doc.RootElement;
+            if (root.ValueKind == JsonValueKind.Array && root.GetArrayLength() > 0)
+                root = root[0];
+            if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty("error", out JsonElement error))
+            {
+                if (error.ValueKind == JsonValueKind.Object && error.TryGetProperty("message", out JsonElement msg))
+                    return Truncate(msg.GetString());
+                if (error.ValueKind == JsonValueKind.String)
+                    return Truncate(error.GetString());
+            }
+        }
+        catch (JsonException)
+        {
+            // Cuerpo no JSON.
+        }
+        return null;
+    }
+
+    private static string? Truncate(string? text) =>
+        text is { Length: > 200 } ? text[..200] + "…" : text;
 }

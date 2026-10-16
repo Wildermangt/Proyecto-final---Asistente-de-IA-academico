@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using AsistenteIA.Models;
 using AsistenteIA.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -18,6 +19,8 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string maskedKey = string.Empty;
     [ObservableProperty] private bool hasKey;
     [ObservableProperty] private string? selectedModel;
+    [ObservableProperty] private AiProvider? selectedProvider;
+    [ObservableProperty] private string providerInfo = string.Empty;
     [ObservableProperty] private int timeoutSeconds;
     [ObservableProperty] private string statusMessage = string.Empty;
     [ObservableProperty] private bool isError;
@@ -29,6 +32,7 @@ public partial class SettingsViewModel : ObservableObject
 
     public bool IsNotBusy => !IsBusy;
     public ObservableCollection<string> Models { get; } = [];
+    public IReadOnlyList<AiProvider> Providers => AiProvider.All;
     public string AppVersion => $"Versión {AppInfo.Current.VersionString}";
     public string DatabaseLocation => DatabaseService.DatabasePath;
 
@@ -46,8 +50,27 @@ public partial class SettingsViewModel : ObservableObject
         _loading = true;
         try
         {
-            await RefreshKeyStateAsync();
+            await _keyService.MigrateLegacyKeyAsync();
+            SelectedProvider = _settings.Provider;
             TimeoutSeconds = _settings.TimeoutSeconds;
+            await RefreshProviderAsync();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    // Recarga la clave enmascarada, la información y los modelos del proveedor activo.
+    private async Task RefreshProviderAsync()
+    {
+        bool wasLoading = _loading;
+        _loading = true;
+        try
+        {
+            AiProvider provider = _settings.Provider;
+            ProviderInfo = $"Endpoint: POST {provider.BaseUrl}chat/completions · Claves: {provider.KeysUrl}";
+            await RefreshKeyStateAsync();
             var models = await _aiService.GetModelsAsync();
             string current = _settings.SelectedModel;
             Models.Clear();
@@ -59,8 +82,22 @@ public partial class SettingsViewModel : ObservableObject
         }
         finally
         {
-            _loading = false;
+            _loading = wasLoading;
         }
+    }
+
+    partial void OnSelectedProviderChanged(AiProvider? value)
+    {
+        if (_loading || value is null || value == _settings.Provider)
+            return;
+        _settings.Provider = value;
+        _ = ChangeProviderAsync(value);
+    }
+
+    private async Task ChangeProviderAsync(AiProvider provider)
+    {
+        await RefreshProviderAsync();
+        SetStatus($"Proveedor seleccionado: {provider.Name}.", false);
     }
 
     partial void OnSelectedModelChanged(string? value)
@@ -81,16 +118,29 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task SaveKeyAsync()
     {
-        string key = ApiKeyInput?.Trim() ?? string.Empty;
+        string key = ApiKeyService.Sanitize(ApiKeyInput ?? string.Empty);
         if (key.Length < 8)
         {
             SetStatus("Ingrese una clave válida (no puede estar vacía).", true);
             return;
         }
+
+        // Si el prefijo indica otro proveedor (p. ej. "AIza" = Google), se cambia automáticamente.
+        AiProvider? guessed = ApiKeyService.GuessProvider(key);
+        string extra = string.Empty;
+        if (guessed is not null && guessed != _settings.Provider)
+        {
+            _settings.Provider = guessed;
+            _loading = true;
+            SelectedProvider = guessed;
+            _loading = false;
+            extra = $" La clave parece de {guessed.Name}, así que se seleccionó ese proveedor.";
+        }
+
         await _keyService.SaveAsync(key);
         ApiKeyInput = string.Empty;
-        await RefreshKeyStateAsync();
-        SetStatus("Clave guardada de forma segura.", false);
+        await RefreshProviderAsync();
+        SetStatus($"Clave guardada de forma segura.{extra}", false);
     }
 
     [RelayCommand]
@@ -118,7 +168,7 @@ public partial class SettingsViewModel : ObservableObject
         try
         {
             string reply = await _aiService.TestConnectionAsync();
-            SetStatus($"Conexión exitosa con {_settings.SelectedModel}. Respuesta: \"{reply}\"", false);
+            SetStatus($"Conexión exitosa con {_settings.Provider.Name} ({_settings.SelectedModel}). Respuesta: \"{reply}\"", false);
         }
         catch (AiServiceException ex)
         {
