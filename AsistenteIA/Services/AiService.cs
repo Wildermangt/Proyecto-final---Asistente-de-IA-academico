@@ -84,7 +84,10 @@ public class AiService
             line = line.Replace("**", string.Empty).Replace("__", string.Empty).Replace("`", string.Empty);
             sb.Append(line).Append('\n');
         }
-        return System.Text.RegularExpressions.Regex.Replace(sb.ToString(), "\n{3,}", "\n\n").Trim();
+        string result = sb.ToString();
+        // Énfasis con un solo asterisco: *palabra* -> palabra
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"(?<!\w)\*(?=\S)([^*\n]+?)(?<=\S)\*(?!\w)", "$1");
+        return System.Text.RegularExpressions.Regex.Replace(result, "\n{3,}", "\n\n").Trim();
     }
 
     // Consulta breve para el botón "Probar conexión".

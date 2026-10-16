@@ -1,38 +1,58 @@
 # 05. Plan y resultados de pruebas
 
-**Destino de prueba:** Windows 11 Pro (Windows Machine, .NET MAUI WinUI). Ventana de 1100×800 y de 420×820 para simular un teléfono.
-**Ejecución:** la app se manejó con UI Automation de Windows (identificadores `AutomationId` en cada control) y se tomó una captura en cada paso. Todas las capturas están en [`evidencias/`](evidencias/).
+**Destino de prueba:** Windows 11 Pro (Windows Machine, .NET MAUI WinUI). Ventanas de 1100×800 (normal), 400×800 (móvil), 820×800 (tablet) y 1400×800 (escritorio).
+**Proveedor durante las pruebas:** Google Gemini, modelo `gemini-3.8-flash`, con la clave del equipo guardada en SecureStorage.
+**Fechas:** 15 y 16 de octubre de 2026.
+**Ejecución:** la app se manejó con UI Automation de Windows (un `AutomationId` en cada control) y se tomó una captura en cada paso. En todas las capturas la clave está tapada. Las capturas están en [`evidencias/`](evidencias/) y el índice paso a paso en [`evidencias/README.md`](evidencias/README.md).
+
+## Casos obligatorios P01–P10
 
 | Caso | Condición | Pasos | Resultado esperado | Resultado obtenido | Estado | Evidencia |
 |---|---|---|---|---|---|---|
-| P01 | Prompt válido y clave válida | Configurar la clave → Consultar → escribir "Explica qué es una API REST" → Consultar | Respuesta visible y estado final correcto | _Pendiente: requiere la clave real del equipo_ | ⏳ | `P01-*.png` |
-| P02 | Prompt vacío | Consultar con el editor vacío. Repetir con "API" (3 caracteres). | No se envía la solicitud; mensaje de validación | "Escriba una consulta antes de enviar." / "La consulta es demasiado corta (mínimo 5 caracteres)." Sin indicador de carga ni solicitud HTTP. | ✅ | [P02](evidencias/P02-prompt-vacio.png), [P02b](evidencias/P02b-prompt-muy-corto.png) |
-| P03 | Sin conexión | Desactivar la red → Consultar | La app no se cierra; mensaje comprensible | _Pendiente: requiere desconectar la red del equipo_ | ⏳ | `P03-*.png` |
-| P04 | Clave inválida | Guardar la clave falsa `sk_clave_invalida_de_prueba_0000` → Probar conexión → Consultar | Error de autorización sin mostrar la clave | "Error 401: la clave no es válida o no tiene permisos. Actualícela en Configuración." La clave se ve como `••••••` al escribir y como `••••0000` después de guardar. | ✅ | [P04a](evidencias/P04a-clave-oculta-al-escribir.png), [P04b](evidencias/P04b-clave-guardada-enmascarada.png), [P04c](evidencias/P04c-probar-conexion-401.png), [P04d](evidencias/P04d-consulta-clave-invalida.png) |
-| P05 | Tiempo agotado | Tiempo máximo = 1 s → Consultar un prompt largo | La espera termina y el usuario puede reintentar | _Pendiente: requiere la clave real_ | ⏳ | `P05-*.png` |
-| P06 | Cancelar solicitud | Consultar → pulsar Cancelar durante la carga | Se cancela sin bloquear la interfaz | _Pendiente: requiere la clave real_ | ⏳ | `P06-*.png` |
-| P07 | Guardar conversación | Después de P01 → Guardar → ir a Historial | El registro aparece en el historial | _Pendiente: requiere la clave real_ | ⏳ | `P07-*.png` |
-| P08 | Eliminar conversación | Historial → Eliminar → confirmar | Se pide confirmación y la lista se actualiza | _Pendiente: depende de P07_ | ⏳ | `P08-*.png` |
-| P09 | Reiniciar aplicación | Cerrar la app → abrir → Historial | El historial permanece | _Pendiente: depende de P07_ | ⏳ | `P09-*.png` |
-| P10 | Pantalla pequeña | Ventana de 420×820 en Inicio, Consultar, Historial y Configuración | Los controles siguen accesibles | **Primera ejecución: FALLÓ.** Los botones y selectores se recortaban ("Consu", "Cance"). Se corrigió con `FlexLayout Wrap` y `ScrollView`. **Segunda ejecución: OK.** | ✅ (corregido) | [antes](evidencias/P10-ANTES-falla-botones-recortados.png), [después](evidencias/P10b-DESPUES-pantalla-pequena-consultar.png), [desplazada](evidencias/P10e-pantalla-pequena-consultar-desplazada.png), [historial](evidencias/P10c-pantalla-pequena-historial.png), [config.](evidencias/P10d-pantalla-pequena-configuracion.png) |
+| P01 | Prompt válido y clave válida | Plantilla "Explicar concepto", categoría Programación, consulta "API REST" → Consultar | Respuesta visible y estado final correcto | Indicador de carga mientras consulta. Luego la respuesta con definición, ejemplo y error común, y el estado "Respuesta recibida. Verifique la información…". | ✅ | [P01a cargando](evidencias/P01a-consultando.png), [P01b respuesta](evidencias/P01b-respuesta-recibida.png), [P01c desplazada](evidencias/P01c-respuesta-desplazada.png), [P01d texto plano](evidencias/P01d-respuesta-texto-plano-corregida.png) |
+| P02 | Prompt vacío | Consultar con el editor vacío. Repetir con "API" (3 caracteres). | No se envía la solicitud; mensaje de validación | "Escriba una consulta antes de enviar." / "La consulta es demasiado corta (mínimo 5 caracteres)." Sin solicitud HTTP. | ✅ | [P02](evidencias/P02-prompt-vacio.png), [P02b](evidencias/P02b-prompt-muy-corto.png) |
+| P03 | Sin conexión | Se abrió la app con un proxy inexistente (`HTTPS_PROXY=http://127.0.0.1:9`) solo para su proceso → Consultar | La app no se cierra; mensaje comprensible | "No fue posible contactar el servicio. Verifique su conexión." La app siguió abierta y el historial se pudo consultar sin red. | ✅ | [P03a](evidencias/P03a-sin-conexion-mensaje.png), [P03b](evidencias/P03b-app-sigue-funcionando-sin-red.png) |
+| P04 | Clave inválida | Guardar la clave falsa `sk_clave_invalida_de_prueba_0000` → Probar conexión → Consultar | Error de autorización sin mostrar la clave | "Error 401: la clave no es válida o no tiene permisos…". La clave se ve como `•••` al escribir y como `••••0000` después. | ✅ | [P04a](evidencias/P04a-clave-oculta-al-escribir.png), [P04b](evidencias/P04b-clave-guardada-enmascarada.png), [P04c](evidencias/P04c-probar-conexion-401.png), [P04d](evidencias/P04d-consulta-clave-invalida.png) |
+| P05 | Tiempo agotado | Tiempo máximo = 1 s → Consultar un ensayo largo → volver a 60 s → Consultar | La espera termina y el usuario puede reintentar | "Tiempo de espera agotado (1 s). Puede reintentar." Con 60 s, el reintento devolvió la respuesta. | ✅ | [P05a 1 s](evidencias/P05a-tiempo-espera-1-segundo.png), [P05b agotado](evidencias/P05b-tiempo-agotado.png), [P05c reintento](evidencias/P05c-reintento-exitoso.png) |
+| P06 | Cancelar solicitud | Consultar un ensayo de 1500 palabras → Cancelar durante la carga → escribir otra consulta | Se cancela sin bloquear la interfaz | Durante la carga, Cancelar está habilitado. Después: "Consulta cancelada por el usuario. Puede enviarla de nuevo." El editor siguió respondiendo. | ✅ | [P06a](evidencias/P06a-consultando-cancelar-habilitado.png), [P06b](evidencias/P06b-consulta-cancelada.png), [P06c](evidencias/P06c-interfaz-sigue-disponible.png) |
+| P07 | Guardar conversación | Después de P01 → Guardar → Historial → consultar la base SQLite | El registro aparece en el historial | "Conversación guardada en el historial (registro #1)". Aparece en Historial y en la tabla `ConversationRecord`. | ✅ | [P07a](evidencias/P07a-conversacion-guardada.png), [P07b](evidencias/P07b-aparece-en-historial.png), [P07c SQLite](evidencias/P07c-registro-en-sqlite.png) |
+| P08 | Eliminar conversación | Historial con 2 registros → Eliminar → confirmar | Se pide confirmación y la lista se actualiza | Diálogo "¿Desea eliminar esta conversación…?". Después de confirmar, la lista pasa de 2 a 1. | ✅ | [P08a antes](evidencias/P08a-historial-antes-2-registros.png), [P08b diálogo](evidencias/P08b-confirmacion-eliminar.png), [P08c después](evidencias/P08c-historial-despues-1-registro.png) |
+| P09 | Reiniciar aplicación | Cerrar el proceso (PID 22584) → abrir de nuevo (PID 6652) → Inicio e Historial | El historial permanece | Siguen la conversación y su marca de "verificada". | ✅ | [P09a](evidencias/P09a-reinicio-inicio.png), [P09b](evidencias/P09b-historial-persiste-tras-reinicio.png) |
+| P10 | Pantalla pequeña | Ventana de 400×800 en las seis pantallas | Los controles siguen accesibles | **Primera ejecución: FALLÓ** (botones recortados). Se corrigió y, en la revisión de responsive, se ajustaron también el historial, las plantillas y los mensajes largos. **Ejecución final: OK.** | ✅ (corregido) | [antes](evidencias/P10-ANTES-falla-botones-recortados.png), [después](evidencias/P10b-DESPUES-pantalla-pequena-consultar.png), serie [R1-movil](evidencias/README.md#diseño-responsive) |
+
+**Resultado: 10 de 10 casos aprobados.** P10 se aprobó después de corregir los fallos que encontró.
 
 ## Pruebas adicionales
 
 | Caso | Descripción | Resultado | Evidencia |
 |---|---|---|---|
-| A01 | Crear plantilla "Comparar conceptos" (categoría Estudio) | Guardada y visible en la lista y en Consultar | [08b](evidencias/08b-plantilla-nueva-formulario.png), [08c](evidencias/08c-plantilla-creada.png) |
-| A02 | Editar el texto de la plantilla | "Plantilla … guardada." | [08d](evidencias/08d-plantilla-editando.png), [08e](evidencias/08e-plantilla-editada.png) |
-| A03 | Eliminar la plantilla con confirmación | Diálogo de confirmación, luego "Plantilla … eliminada." | [08f](evidencias/08f-plantilla-confirmar-eliminar.png), [08g](evidencias/08g-plantilla-eliminada.png) |
-| A04 | Eliminar la clave con confirmación | Diálogo, luego "No hay clave configurada" | [09a](evidencias/09a-eliminar-clave-confirmacion.png), [09b](evidencias/09b-clave-eliminada.png) |
-| A05 | Dependencias sin vulnerabilidades | `dotnet list package --vulnerable`: sin paquetes vulnerables | [02](evidencias/02-paquetes-nuget.png) |
+| A01–A03 | Crear, editar y eliminar una plantilla (con confirmación) | OK | [08b](evidencias/08b-plantilla-nueva-formulario.png) … [08g](evidencias/08g-plantilla-eliminada.png) |
+| A04 | Eliminar la clave con confirmación | OK | [09a](evidencias/09a-eliminar-clave-confirmacion.png), [09b](evidencias/09b-clave-eliminada.png) |
+| A05 | Dependencias sin vulnerabilidades | `dotnet list package --vulnerable`: ninguna | [02](evidencias/02-paquetes-nuget.png) |
 | A06 | Compilación Android | `dotnet build -f net10.0-android`: 0 errores | — |
+| A07 | Proveedor saturado (503) | "Error 503: el servicio de IA no está disponible… (Proveedor: This model is currently experiencing high demand…)". Llevó a agregar reintentos automáticos. | [A07](evidencias/A07-error-503-alta-demanda-proveedor.png) |
+| A08 | Cuota agotada (429) | "Error 429: demasiadas solicitudes o cuota agotada… (Proveedor: You exceeded your current quota…)". El mensaje se ajusta en pantalla móvil. | [R1-movil-5b](evidencias/R1-movil-5b-configuracion-mensaje-largo.png) |
+| A09 | Probar conexión con Gemini (Evidencia 2) | "Conexión exitosa con Google Gemini (gemini-3.8-flash). Respuesta: "conectado"" | [10b](evidencias/10b-probar-conexion-exitosa.png), [10c modelos](evidencias/10c-modelos-gemini.png) |
+| A10 | Marcar como verificada (actualización del CRUD) | El detalle pasa a "Verificada" y el historial muestra "Verificada con fuentes" | [11a](evidencias/11a-detalle-sin-verificar.png), [11b](evidencias/11b-detalle-marcada-verificada.png), [11c](evidencias/11c-historial-verificada.png) |
+| A11 | Búsqueda y filtro del historial (RF06) | "REST": 1 resultado. "Moore": 0. Filtro Programación: 1. | [12a](evidencias/12a-historial-busqueda-encontrada.png), [12b](evidencias/12b-historial-filtro-categoria.png), [12c](evidencias/12c-historial-busqueda-sin-resultados.png) |
+| A12 | Diseño responsive (6 pantallas × 3 tamaños) | Sin recortes ni solapamientos después de las correcciones | Series R1, R2 y R3 en [evidencias](evidencias/README.md#diseño-responsive) |
 
 ## Fallos encontrados y corregidos
 
-| Fallo | Detectado en | Causa | Corrección |
-|---|---|---|---|
-| Los botones Cancelar y Guardar se veían activos aunque estuvieran deshabilitados | Revisión de capturas | Los estilos con clave (`DangerButton`, `SecondaryButton`) reemplazaban al estilo implícito y perdían el estado visual `Disabled` | Estilo base `BaseButton` heredado con `BasedOn` |
-| Los lectores de pantalla leían "Estado de la consulta" en lugar del mensaje real | Automatización de P02 | `SemanticProperties.Description` en etiquetas dinámicas reemplaza su texto | Se quitó la descripción en las etiquetas dinámicas |
-| Controles recortados en pantalla angosta | P10 | Filas `Grid` de columnas fijas | `FlexLayout Wrap` + `ScrollView` |
-| La lista de plantillas desplazaba el formulario | A01 | `CollectionView` dentro de `ScrollView` | La lista va en una fila `*` del `Grid` y el formulario en una fila `Auto` |
-| Vulnerabilidad alta en `SQLitePCLRaw.lib.e_sqlite3` 2.1.11 | A05 | Dependencia transitiva | Versión 2.1.14 fijada |
+| # | Fallo | Detectado en | Causa | Corrección |
+|---|---|---|---|---|
+| F1 | Cancelar y Guardar se veían activos estando deshabilitados | Revisión de capturas | Los estilos con clave perdían el estado visual `Disabled` | Estilo base `BaseButton` con `BasedOn` |
+| F2 | Los lectores de pantalla leían "Estado de la consulta" en vez del mensaje | Automatización de P02 | `SemanticProperties.Description` reemplaza el texto | Se quitó en las etiquetas dinámicas |
+| F3 | Controles recortados en pantalla angosta | P10 | Filas `Grid` de columnas fijas | `FlexLayout Wrap` + `ScrollView` |
+| F4 | Vulnerabilidad alta en el SQLite nativo 2.1.11 | A05 | Dependencia transitiva | Versión 2.1.14 fijada |
+| F5 | Una clave de Google enviada a Pollinations daba 401 | P01 (primer intento) | La app tenía un solo proveedor | Proveedor seleccionable (Pollinations / Google Gemini), una clave por proveedor y detección por prefijo |
+| F6 | El 400 de clave inválida de Google se mostraba como error genérico | Investigación de F5 | Google devuelve un **arreglo** JSON y código 400 | `ExtractErrorMessage` acepta objeto o arreglo, y el 400 con "API key" se trata como clave inválida |
+| F7 | Las respuestas mostraban Markdown sin interpretar (`###`, `**`, `---`) | P01 | La etiqueta muestra texto plano | `AiService.PlainText` limpia los símbolos y convierte viñetas a `•` |
+| F8 | Al pedir "sin Markdown" en el prompt de sistema, el modelo respondió **sin tildes** | Repetición de P01 | Interpretó la instrucción como "evitar caracteres especiales" | Se volvió al prompt original; la limpieza la hace solo el código |
+| F9 | Errores 503 frecuentes por saturación del modelo | P01, P05, A07 | Picos de demanda del proveedor | Hasta 2 reintentos automáticos (2 s y 4 s) para 503/429, dentro del tiempo máximo |
+| F10 | "1 conversaciones guardadas" | P09 | Plural fijo | Singular y plural según la cantidad |
+| F11 | En móvil, el texto de las tarjetas del historial quedaba en una columna angosta | Revisión de responsive | Botones en columnas fijas | Texto a todo el ancho y botones debajo |
+| F12 | Títulos duplicados (barra + título grande de la página) | Revisión de responsive | Redundancia de diseño | Los títulos internos pasaron a descripciones breves |
+| F13 | Ancho inconsistente en escritorio | Revisión de responsive | Solo algunas páginas tenían ancho máximo | `MaximumWidthRequest="1000"` en todas las páginas |
+| F14 | En tablet y escritorio, Plantillas mostraba solo 3 elementos | Revisión de responsive | El formulario ocupaba casi todo el alto | Lista y formulario lado a lado en pantallas anchas; apilados en angostas |
+| F15 | Los mensajes de estado largos se cortaban en Configuración | A08 | `HorizontalStackLayout` da ancho infinito a la etiqueta | `Grid` con columna `*` |

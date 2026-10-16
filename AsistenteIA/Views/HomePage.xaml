@@ -6,7 +6,7 @@
              x:DataType="vm:HomeViewModel"
              Title="Inicio">
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="16" MaximumWidthRequest="900">
+        <VerticalStackLayout Padding="20" Spacing="16" MaximumWidthRequest="1000">
 
             <Label Text="AsistenteIA" Style="{StaticResource PageTitle}" AutomationId="HomeTitle" />
             <Label Style="{StaticResource Caption}" LineBreakMode="WordWrap"

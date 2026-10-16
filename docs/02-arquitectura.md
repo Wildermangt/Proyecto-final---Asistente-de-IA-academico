@@ -60,16 +60,16 @@ Es la interfaz donde el usuario escribe sus consultas y ve las respuestas de la 
 
 ## 2. Capa de servicios y consumo REST
 
-Conecta el cliente con el modelo de IA mediante la API REST de Pollinations, compatible con OpenAI Chat Completions.
+Conecta el cliente con el modelo de IA mediante una API REST compatible con OpenAI Chat Completions. El proveedor se elige en Configuración: **Pollinations** o **Google Gemini** (`Models/AiProvider.cs`).
 
 | Clase | Responsabilidad |
 |---|---|
-| `AiService.AskAsync` | Valida el prompt, arma `ChatRequest` (mensaje *system* académico + mensaje *user*) y devuelve el texto de la respuesta |
-| `AiService.SendChatAsync` | Revisa la conectividad, lee la clave, envía `POST chat/completions` con `Authorization: Bearer` y `JsonContent`, controla el tiempo de espera y la cancelación, y deserializa `ChatResponse` |
-| `AiService.CreateHttpErrorAsync` | Convierte los códigos HTTP (401, 402, 429, 5xx…) en `AiServiceException` con mensajes comprensibles |
+| `AiService.AskAsync` | Valida el prompt, arma `ChatRequest` (mensaje *system* académico + mensaje *user*) y devuelve la respuesta limpia de Markdown (`PlainText`) |
+| `AiService.SendChatAsync` | Revisa la conectividad, lee la clave del proveedor activo, envía `POST {URL base}chat/completions` con `Authorization: Bearer` y `JsonContent`, reintenta hasta 2 veces ante 503/429 (esperas de 2 y 4 s), controla el tiempo de espera y la cancelación, y deserializa `ChatResponse` |
+| `AiService.CreateHttpErrorAsync` | Convierte los códigos HTTP (400 de clave inválida de Google, 401, 402, 404, 429, 5xx…) en `AiServiceException` con un mensaje comprensible más el motivo del proveedor (acepta errores en objeto o en arreglo JSON) |
 | `AiService.TestConnectionAsync` | Consulta breve para el botón "Probar conexión" |
-| `AiService.GetModelsAsync` | `GET /v1/models` (público), filtra modelos de texto gratuitos y usa una lista local si no hay conexión |
-| `HttpClient` (singleton en `MauiProgram`) | `BaseAddress = https://gen.pollinations.ai/v1/`. Reutiliza conexiones |
+| `AiService.GetModelsAsync` | `GET {URL base}models`, filtra los modelos de texto del proveedor y usa una lista local si falla |
+| `HttpClient` (singleton en `MauiProgram`) | Reutiliza conexiones. La URL completa la arma `AiService` según el proveedor |
 
 El detalle de solicitud, respuesta y códigos HTTP está en [03-api-rest.md](03-api-rest.md).
 
@@ -151,10 +151,12 @@ classDiagram
 | Un solo `HttpClient` | Evita el agotamiento de sockets y centraliza la URL base. |
 | Tiempo de espera propio con CTS enlazado | Distingue el tiempo agotado (P05) de la cancelación manual (P06). |
 | Errores tipados (`AiErrorKind`) | Mensajes claros por cada caso sin exponer detalles técnicos ni la clave. |
-| Modelo configurable y lista dinámica | Reduce la dependencia del proveedor. |
+| Proveedor seleccionable, modelo configurable y lista dinámica | Reduce la dependencia del proveedor. Se agregó Google Gemini cuando el equipo obtuvo una clave de Google (F5). |
+| Reintento automático ante 503/429 | En las pruebas, Gemini respondió 503 por saturación con frecuencia. Dos reintentos con espera creciente resuelven la mayoría sin intervención (F9). |
+| Limpieza de Markdown en el código, no en el prompt | Pedirle al modelo "sin Markdown" hizo que omitiera las tildes (F8). `PlainText` quita `#`, `**`, `---` y convierte viñetas a `•`. |
 | Plantillas en SQLite | Son editables (RF07) y persisten. |
 | Bindings compilados (`x:DataType`) + XAML `SourceGen` | Errores de enlace detectados al compilar y mejor rendimiento. |
-| `FlexLayout Wrap` | Diseño adaptable a pantallas pequeñas (corrección hecha a partir de P10). |
+| Diseño responsive | `FlexLayout Wrap` en filas de controles, `MaximumWidthRequest="1000"` en todas las páginas, lista y formulario lado a lado en pantallas anchas, `Grid` con columna `*` para textos largos. Verificado en 400, 820 y 1400 px (F3, F11–F15). |
 
 ## 4. Capa de persistencia / repositorio
 
@@ -164,7 +166,7 @@ Controla el acceso a los datos locales: consultas, historial, plantillas y confi
 |---|---|---|---|
 | Historial de conversaciones | SQLite, tabla `ConversationRecord` | `DatabaseService` | Crear (`InsertAsync`), consultar con búsqueda y filtro por categoría (`Table<T>().Where().ToListAsync`), actualizar verificación y categoría (`UpdateAsync`), eliminar (`DeleteAsync`) |
 | Plantillas de prompts | SQLite, tabla `PromptTemplate` | `DatabaseService` | CRUD completo y seis plantillas iniciales |
-| Modelo y tiempo de espera | `Preferences` | `SettingsService` | Lectura y escritura |
+| Proveedor, modelo (por proveedor) y tiempo de espera | `Preferences` | `SettingsService` | Lectura y escritura |
 | Clave de la API | `SecureStorage` | `ApiKeyService` | Ver la capa 5 |
 
 - **Ubicación:** `FileSystem.AppDataDirectory/asistenteia.db3`. Persiste entre reinicios (P09).
@@ -180,7 +182,7 @@ Maneja los datos de forma segura y mitiga los riesgos de privacidad. La matriz c
 | Control | Implementación |
 |---|---|
 | Credencial fuera del código | La clave la ingresa el usuario. No hay claves en el código, la configuración ni el repositorio (verificado con `git grep`). |
-| Almacenamiento cifrado | `ApiKeyService` usa `SecureStorage` (DPAPI en Windows, Keystore en Android). |
+| Almacenamiento cifrado | `ApiKeyService` usa `SecureStorage` (DPAPI en Windows, Keystore en Android), con una ranura por proveedor. Al guardarla, la clave se limpia de espacios y caracteres invisibles. |
 | La clave nunca se muestra | `Entry IsPassword="True"`, campo que se limpia al guardar y visualización enmascarada `••••1234`. No se registra en consola. |
 | Transporte seguro | HTTPS. La clave va en el encabezado `Authorization`, nunca en la URL. |
 | Minimización de datos | Avisos visibles para no ingresar datos personales. El historial vive solo en el dispositivo. No hay cuentas ni analítica. |

@@ -30,7 +30,7 @@ AsistenteIA es una aplicación instalable, no una página web, así que no neces
 |---|---|
 | Sistema operativo | Windows 10 (versión 1809) o superior, o Android 5.0 o superior |
 | Conexión a internet | Necesaria para consultar la IA. El historial y las plantillas se pueden ver sin conexión. |
-| Clave de la API | Una clave personal de Pollinations (gratuita), obtenida en <https://enter.pollinations.ai/keys> |
+| Clave de la API | Una clave personal de Google Gemini (AI Studio) o de Pollinations |
 | Espacio | Menos de 200 MB |
 
 ---
@@ -39,9 +39,14 @@ AsistenteIA es una aplicación instalable, no una página web, así que no neces
 
 ### 2.1 Inicio de sesión / registro
 
-La app **no requiere cuenta ni contraseña**: se abre directamente. La única credencial es la **clave de la API**, que se registra una sola vez:
+La app **no requiere cuenta ni contraseña**: se abre directamente. La única credencial es la **clave de la API**, que se registra una sola vez. Puede usar uno de dos proveedores:
 
-1. Abra la pestaña **Configuración**.
+| Proveedor | Dónde obtener la clave | Prefijo |
+|---|---|---|
+| Google Gemini | <https://aistudio.google.com/apikey> | `AIza…` |
+| Pollinations | <https://enter.pollinations.ai/keys> | `sk_…` |
+
+1. Abra la pestaña **Configuración** y, en **Proveedor de IA**, elija el proveedor de su clave. Si la clave tiene un prefijo conocido, la app lo selecciona sola al guardar.
 2. Pegue su clave en el campo "Pegue aquí su clave". Se verán puntos (•••), no el texto.
 3. Pulse **Guardar clave**. Aparecerá "Clave configurada: ••••XXXX" (solo los últimos 4 caracteres).
 4. Pulse **Probar conexión**. Si todo está bien, verá "Conexión exitosa…".
@@ -146,10 +151,10 @@ En **Historial → Ver** (pantalla de detalle) puede:
 | "Escriba una consulta antes de enviar." / "…demasiado corta" | Pregunta vacía o con menos de 5 caracteres | Escriba una pregunta más completa |
 | "La consulta supera 2000 caracteres." | Texto demasiado largo (contando la plantilla) | Acorte el texto o use "Consulta libre" |
 | "Configure la clave de la API…" | No hay clave guardada | Vea la sección 2.1 |
-| "Error 401: la clave no es válida…" | Clave incorrecta, vencida o revocada | Genere una nueva clave y guárdela |
+| "Error 401…" / "Error 400: la clave no es válida para este proveedor…" | Clave incorrecta, revocada o de **otro proveedor** | Revise que el proveedor elegido coincida con la clave, o genere una nueva |
 | "Error 402: el saldo… se agotó." | La clave no tiene saldo | Recargue saldo en Pollinations o use otra clave |
-| "Error 429: demasiadas solicitudes…" | Muchas consultas seguidas | Espere un minuto y reintente |
-| "Error 5xx: el servicio… no está disponible" | Falla del proveedor | Reintente más tarde o cambie de modelo |
+| "Error 429: demasiadas solicitudes o cuota agotada…" | Muchas consultas seguidas o se acabó la cuota gratuita del día | Espere (la cuota gratuita de Google se renueva cada día) o use otra clave o proveedor |
+| "Error 503: el servicio… no está disponible (…high demand)" | El modelo está saturado. La app ya reintentó 2 veces de forma automática | Reintente en unos segundos o elija otro modelo en Configuración |
 | "Sin conexión a internet…" / "No fue posible contactar el servicio" | Sin red o red bloqueada | Revise el Wi-Fi o los datos y reintente |
 | "Tiempo de espera agotado (N s)…" | El modelo tardó más que el límite | Pulse Consultar de nuevo, aumente el tiempo en Configuración o elija un modelo más rápido |
 | "Consulta cancelada por el usuario." | Pulsó Cancelar | Vuelva a enviar cuando quiera |

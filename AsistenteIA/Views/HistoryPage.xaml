@@ -7,9 +7,9 @@
              x:DataType="vm:HistoryViewModel"
              x:Name="Page"
              Title="Historial">
-    <Grid Padding="20,12" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10">
+    <Grid Padding="20,12" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10" MaximumWidthRequest="1000">
 
-        <Label Text="Historial de consultas" Style="{StaticResource PageTitle}" />
+        <Label Text="Busque, filtre y abra sus conversaciones guardadas." Style="{StaticResource Caption}" LineBreakMode="WordWrap" />
 
         <FlexLayout Grid.Row="1" Wrap="Wrap" AlignItems="Center" Margin="-5,0">
             <SearchBar Placeholder="Buscar en preguntas y respuestas" Text="{Binding SearchText}"
@@ -37,33 +37,36 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:ConversationRecord">
                     <Border Style="{StaticResource Card}" Padding="12">
-                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto">
-                            <Label Text="{Binding Prompt}" FontFamily="OpenSansSemibold" MaxLines="2"
-                                   LineBreakMode="TailTruncation" Grid.ColumnSpan="1" />
-                            <Label Grid.Row="1" Text="{Binding Answer}" Style="{StaticResource Caption}" MaxLines="2"
-                                   LineBreakMode="TailTruncation" />
-                            <Label Grid.Row="2" Style="{StaticResource Caption}" FontSize="12">
-                                <Label.FormattedText>
-                                    <FormattedString>
-                                        <Span Text="{Binding CreatedAtLocal}" />
-                                        <Span Text="  ·  " />
-                                        <Span Text="{Binding Category}" />
-                                        <Span Text="  ·  " />
-                                        <Span Text="{Binding VerificationText}" />
-                                    </FormattedString>
-                                </Label.FormattedText>
-                            </Label>
-                            <Button Grid.Column="1" Grid.RowSpan="3" Text="Ver" VerticalOptions="Center"
-                                    AutomationId="HistoryOpenButton"
-                                    SemanticProperties.Hint="Abre el detalle de la conversación"
-                                    Command="{Binding BindingContext.OpenCommand, Source={x:Reference Page}, x:DataType=ContentPage}"
-                                    CommandParameter="{Binding .}" />
-                            <Button Grid.Column="2" Grid.RowSpan="3" Text="Eliminar" VerticalOptions="Center"
-                                    Style="{StaticResource DangerButton}" AutomationId="HistoryDeleteButton"
-                                    SemanticProperties.Hint="Elimina la conversación del historial"
-                                    Command="{Binding BindingContext.DeleteCommand, Source={x:Reference Page}, x:DataType=ContentPage}"
-                                    CommandParameter="{Binding .}" />
-                        </Grid>
+                        <!-- Texto a todo el ancho y acciones debajo: estable en cualquier tamaño de pantalla -->
+                        <VerticalStackLayout Spacing="6">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="{Binding Prompt}" FontFamily="OpenSansSemibold" MaxLines="2"
+                                       LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding Answer}" Style="{StaticResource Caption}" MaxLines="2"
+                                       LineBreakMode="TailTruncation" />
+                                <Label Style="{StaticResource Caption}" FontSize="12">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding CreatedAtLocal}" />
+                                            <Span Text="  ·  " />
+                                            <Span Text="{Binding Category}" />
+                                            <Span Text="  ·  " />
+                                            <Span Text="{Binding VerificationText}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </VerticalStackLayout>
+                            <HorizontalStackLayout Spacing="8" HorizontalOptions="End">
+                                <Button Text="Ver" AutomationId="HistoryOpenButton"
+                                        SemanticProperties.Hint="Abre el detalle de la conversación"
+                                        Command="{Binding BindingContext.OpenCommand, Source={x:Reference Page}, x:DataType=ContentPage}"
+                                        CommandParameter="{Binding .}" />
+                                <Button Text="Eliminar" Style="{StaticResource DangerButton}" AutomationId="HistoryDeleteButton"
+                                        SemanticProperties.Hint="Elimina la conversación del historial"
+                                        Command="{Binding BindingContext.DeleteCommand, Source={x:Reference Page}, x:DataType=ContentPage}"
+                                        CommandParameter="{Binding .}" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

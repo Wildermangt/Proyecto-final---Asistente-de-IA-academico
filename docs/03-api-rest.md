@@ -56,8 +56,8 @@ Formato real devuelto por el proveedor (comprobado con una clave inválida):
 | 404 | Modelo inexistente para el proveedor | "Error 404: el modelo no existe para este proveedor…" | — |
 | 401 / 403 | Clave ausente, inválida o sin permisos | "Error 401: la clave no es válida o no tiene permisos. Actualícela en Configuración." | P04 |
 | 402 | Saldo o presupuesto de la clave agotado | "Error 402: el saldo o presupuesto de la clave se agotó." | — |
-| 429 | Demasiadas solicitudes | "Error 429: demasiadas solicitudes. Espere un momento…" | — |
-| 5xx | Falla del proveedor | "Error 5xx: el servicio de IA no está disponible en este momento." | — |
+| 429 | Demasiadas solicitudes o cuota agotada | "Error 429: demasiadas solicitudes o cuota agotada… (Proveedor: You exceeded your current quota…)" | A08 |
+| 5xx | Falla o saturación del proveedor | "Error 503: el servicio de IA no está disponible… (Proveedor: This model is currently experiencing high demand…)" | A07 |
 | Otro 4xx | Solicitud rechazada | "Error N: " + mensaje del proveedor | — |
 | Sin red (`IConnectivity`) | No hay internet | "Sin conexión a internet. Revise su red e intente de nuevo." | P03 |
 | `HttpRequestException` | DNS, TLS o conexión caída | "No fue posible contactar el servicio. Verifique su conexión." | P03 |
@@ -72,6 +72,10 @@ Formato de error de Google (comprobado con una clave falsa):
 ```
 
 `AiService.ExtractErrorMessage` acepta ambos formatos (objeto o arreglo) y añade el mensaje del proveedor al error, por ejemplo: "(Proveedor: Please pass a valid API key)". Ese mensaje nunca incluye la clave.
+
+## Reintentos
+
+Ante **503** o **429**, `SendChatAsync` reintenta hasta 2 veces, con esperas de 2 y 4 segundos, dentro del mismo tiempo máximo configurado. Si el usuario cancela, también se cancela la espera. Si los reintentos se agotan, se muestra el error con el motivo del proveedor.
 
 ## Catálogo de modelos
 

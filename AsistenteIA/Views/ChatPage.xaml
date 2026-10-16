@@ -8,9 +8,9 @@
              Title="Consultar IA">
     <!-- La vista solo enlaza propiedades y comandos; no hace solicitudes HTTP. -->
     <ScrollView>
-        <VerticalStackLayout Padding="20,12" Spacing="10">
+        <VerticalStackLayout Padding="20,12" Spacing="10" MaximumWidthRequest="1000">
 
-            <Label Text="Asistente académico de IA" Style="{StaticResource PageTitle}" />
+            <Label Text="Elija una plantilla, escriba su consulta y pulse Consultar." Style="{StaticResource Caption}" LineBreakMode="WordWrap" />
 
             <!-- Plantilla y categoría: FlexLayout pasa a varias filas en pantallas angostas -->
             <FlexLayout Wrap="Wrap" AlignItems="End" Margin="-5,0">
