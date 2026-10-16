@@ -53,7 +53,7 @@
                     <Picker Title="Modelo de IA" ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}"
                             AutomationId="SettingsModelPicker" SemanticProperties.Description="Modelo de inteligencia artificial" />
                     <Label Style="{StaticResource Caption}" LineBreakMode="WordWrap"
-                           Text="La lista se obtiene del catálogo público del proveedor (GET /v1/models) y muestra solo modelos de texto gratuitos." />
+                           Text="La lista se obtiene del catálogo del proveedor elegido (GET /models) y muestra solo modelos de texto." />
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                         <Label Text="Tiempo máximo de espera (segundos)" VerticalOptions="Center" />
                         <Entry Grid.Column="1" WidthRequest="90" Keyboard="Numeric" AutomationId="SettingsTimeoutEntry"

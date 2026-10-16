@@ -11,6 +11,7 @@ public class AiService
 {
     public const int MinPromptLength = 5;
     public const int MaxPromptLength = 2000;
+    private const int MaxRetries = 2;
 
     private const string SystemPrompt =
         "Eres un asistente académico. Responde en español de forma clara y ordenada, " +
@@ -62,7 +63,28 @@ public class AiService
         string? answer = result?.Choices.FirstOrDefault()?.Message.Content;
         return string.IsNullOrWhiteSpace(answer)
             ? "El servicio no devolvió contenido."
-            : answer.Trim();
+            : PlainText(answer);
+    }
+
+    // La interfaz muestra texto plano: se quitan los símbolos Markdown que algunos modelos agregan igual.
+    public static string PlainText(string text)
+    {
+        var lines = text.Replace("\r\n", "\n").Split('\n');
+        var sb = new System.Text.StringBuilder();
+        foreach (string rawLine in lines)
+        {
+            string line = rawLine.TrimEnd();
+            string trimmed = line.TrimStart();
+            if (trimmed is "---" or "***" or "___")
+                line = string.Empty;
+            else if (trimmed.StartsWith('#'))
+                line = trimmed.TrimStart('#').TrimStart();
+            else if (trimmed.StartsWith("* ") || trimmed.StartsWith("- "))
+                line = line[..(line.Length - trimmed.Length)] + "• " + trimmed[2..];
+            line = line.Replace("**", string.Empty).Replace("__", string.Empty).Replace("`", string.Empty);
+            sb.Append(line).Append('\n');
+        }
+        return System.Text.RegularExpressions.Regex.Replace(sb.ToString(), "\n{3,}", "\n\n").Trim();
     }
 
     // Consulta breve para el botón "Probar conexión".
@@ -138,17 +160,27 @@ public class AiService
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(userToken, timeoutCts.Token);
 
         var endpoint = new Uri(new Uri(_settings.Provider.BaseUrl), "chat/completions");
-        using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-        request.Content = JsonContent.Create(body);
 
         try
         {
-            using HttpResponseMessage response = await _client.SendAsync(request, linkedCts.Token);
-            if (!response.IsSuccessStatusCode)
-                throw await CreateHttpErrorAsync(response, linkedCts.Token);
+            // Los picos de demanda (503) y los límites momentáneos (429) suelen pasar en segundos:
+            // se reintenta hasta 2 veces con espera creciente, dentro del mismo tiempo máximo.
+            for (int attempt = 0; ; attempt++)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+                request.Content = JsonContent.Create(body);
 
-            return await response.Content.ReadFromJsonAsync<ChatResponse>(cancellationToken: linkedCts.Token);
+                using HttpResponseMessage response = await _client.SendAsync(request, linkedCts.Token);
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<ChatResponse>(cancellationToken: linkedCts.Token);
+
+                bool transient = response.StatusCode is HttpStatusCode.ServiceUnavailable or HttpStatusCode.TooManyRequests;
+                if (!transient || attempt >= MaxRetries)
+                    throw await CreateHttpErrorAsync(response, linkedCts.Token);
+
+                await Task.Delay(TimeSpan.FromSeconds(2 << attempt), linkedCts.Token);
+            }
         }
         catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested && !userToken.IsCancellationRequested)
         {

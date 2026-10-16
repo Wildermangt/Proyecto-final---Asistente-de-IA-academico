@@ -27,7 +27,9 @@ public partial class HomeViewModel : ObservableObject
         HasKey = await _keyService.HasKeyAsync();
         var records = await _database.GetConversationsAsync();
         int verified = records.Count(r => r.IsVerified);
-        HistorySummary = $"{records.Count} conversaciones guardadas · {verified} verificadas";
+        string saved = records.Count == 1 ? "1 conversación guardada" : $"{records.Count} conversaciones guardadas";
+        string checkedText = verified == 1 ? "1 verificada" : $"{verified} verificadas";
+        HistorySummary = $"{saved} · {checkedText}";
     }
 
     [RelayCommand]
