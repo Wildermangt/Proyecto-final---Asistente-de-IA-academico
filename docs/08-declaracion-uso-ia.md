@@ -29,5 +29,5 @@ _Completar la firma y la fecha de entrega:_
 | Integrante | Rol (Fase 14) | Firma |
 |---|---|---|
 | Jeferson Wilderman González Tenjo | Director de proyecto | |
-| María Alejandra Gómez | Ingeniera de servicios y datos | |
-| José Leandro Ocampo | Ingeniero de calidad y pruebas (QA) | |
+| María Alejandra Gómez | Desarrolladora de software (servicios y datos) | |
+| José Leandro Ocampo | Desarrollador de software (calidad y pruebas) | |

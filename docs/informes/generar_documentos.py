@@ -325,10 +325,10 @@ def doc_metodologia():
               ['Director de proyecto', 'Planeación de los sprints, definición de la arquitectura, diseño de la interfaz, '
                'gestión del repositorio y de las ramas, revisión e integración de los cambios, documentación técnica y '
                'aprobación de la versión estable', 'Jeferson Wilderman González Tenjo'],
-              ['Ingeniera de servicios y datos', 'Integración con la API REST de IA, manejo de errores HTTP, protección de la '
+              ['Desarrolladora de software (servicios y datos)', 'Integración con la API REST de IA, manejo de errores HTTP, protección de la '
                'credencial con SecureStorage y persistencia local con SQLite (CRUD del historial y las plantillas)',
                'María Alejandra Gómez'],
-              ['Ingeniero de calidad y pruebas (QA)', 'Diseño y ejecución del plan de pruebas P01–P10, pruebas de calidad, '
+              ['Desarrollador de software (calidad y pruebas)', 'Diseño y ejecución del plan de pruebas P01–P10, pruebas de calidad, '
                'seguridad y adaptación a pantallas, registro de fallos y evidencias, y verificación de las correcciones',
                'José Leandro Ocampo'],
           ], [4.2, 8.6, 4.2]),
