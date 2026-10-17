@@ -32,10 +32,11 @@ El ejecutable de Windows queda en `AsistenteIA/bin/<Config>/net10.0-windows10.0.
 
 | Elemento | Ubicación | Cómo cambiarlo |
 |---|---|---|
-| URL base de la API | `SettingsService.BaseUrl` | Constante. `MauiProgram` la usa en el `HttpClient`. |
-| Modelo por defecto | `SettingsService.DefaultModel` (`openai/gpt-5.4-nano`) | Constante, o desde la app (Preferences). |
-| Tiempo de espera | `SettingsService.TimeoutSeconds` (60 s) | Desde la app (Preferences, de 1 a 120). |
-| Clave | SecureStorage `pollinations_api_key` | Solo desde la app. |
+| Proveedores (URL base, modelo por defecto, modelos de respaldo, prefijo de clave) | `Models/AiProvider.cs` (`Pollinations`, `Gemini`) | Código. `AiService` arma la URL completa con la URL base del proveedor activo. |
+| Proveedor activo | Preferences `ProviderId` (`SettingsService.Provider`) | Desde la app (Configuración → Proveedor de IA). |
+| Modelo | Preferences `SelectedModel_{proveedor}` | Desde la app; se guarda uno por proveedor. |
+| Tiempo de espera | Preferences `TimeoutSeconds` (60 s por defecto; se recomienda 120 s con el plan gratuito de Gemini) | Desde la app (de 1 a 120). |
+| Clave | SecureStorage `{proveedor}_api_key` (`gemini_api_key`, `pollinations_api_key`) | Solo desde la app. |
 | Base de datos | `FileSystem.AppDataDirectory/asistenteia.db3` | — |
 | Permisos de Android | `Platforms/Android/AndroidManifest.xml` | `INTERNET`, `ACCESS_NETWORK_STATE` |
 
@@ -63,9 +64,9 @@ Las tablas y las seis plantillas iniciales se crean en el primer acceso (`Databa
 
 Como el formato es compatible con OpenAI Chat Completions:
 
-1. Cambie `SettingsService.BaseUrl` por la URL del nuevo proveedor (debe terminar en `/`).
-2. Ajuste `DefaultModel` y la lista de respaldo en `AiService.GetModelsAsync`.
-3. Si el proveedor usa otro esquema de autenticación, cambie el encabezado en `AiService.SendChatAsync`.
+1. Agregue un `AiProvider` en `Models/AiProvider.cs` con su `Id`, `Name`, `BaseUrl` (terminada en `/`), `DefaultModel`, `KeysUrl`, `FallbackModels` y, si aplica, `KeyPrefix`.
+2. Inclúyalo en la lista `AiProvider.All`. Aparecerá en el selector de Configuración con su propia ranura de clave.
+3. Si el proveedor filtra modelos o usa otro esquema de autenticación, ajuste `AiService.GetModelsAsync` o el encabezado en `AiService.SendChatAsync`.
 
 ## Registro de errores (Windows)
 

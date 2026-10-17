@@ -5,7 +5,7 @@ AsistenteIA es un asistente académico con inteligencia artificial que consume s
 ```mermaid
 flowchart TB
     subgraph P [1. Capa de presentación · Views + ViewModels]
-        V[HomePage · ChatPage · HistoryPage · DetailPage · SettingsPage · TemplatesPage]
+        V[HomePage · ChatPage · HistoryPage · DetailPage · SettingsPage · TemplatesPage · MarkdownView]
         VM[HomeVM · ChatVM · HistoryVM · DetailVM · SettingsVM · TemplatesVM]
         V -- Binding / Command --> VM
     end
@@ -15,7 +15,7 @@ flowchart TB
         AI --> HC
     end
     subgraph L [3. Lógica de negocio y estructura · Models]
-        M[ChatRequest · ChatResponse · ConversationRecord · PromptTemplate · Categories · AiServiceException]
+        M[ChatRequest · ChatResponse · ConversationRecord · PromptTemplate · AiProvider · Categories · AiServiceException]
     end
     subgraph R [4. Persistencia / repositorio]
         DB[DatabaseService]
@@ -34,7 +34,7 @@ flowchart TB
     VM --> PR
     AI --> K
     AI --> CN
-    HC -- HTTPS POST JSON --> API[(API Pollinations\n/v1/chat/completions)]
+    HC -- HTTPS POST JSON --> API[(API de IA: Google Gemini o Pollinations\nchat/completions)]
     M -. usado por .- S
     M -. usado por .- R
 ```
@@ -92,29 +92,139 @@ Contiene las reglas del dominio, los modelos y las decisiones de diseño.
 ```mermaid
 classDiagram
     direction LR
-    class ChatRequest { +string Model; +List~ChatMessage~ Messages }
-    class ChatMessage { +string Role; +string Content }
-    class ChatResponse { +List~ChatChoice~ Choices }
-    class ChatChoice { +ChatMessage Message }
-    class ApiErrorResponse { +ApiError Error }
-    class ApiError { +string Message; +string Code }
-    class ModelInfo { +string Id; +string Category; +bool PaidOnly }
-    class ConversationRecord { +int Id; +string Prompt; +string Answer; +DateTime CreatedAt; +string Category; +bool IsVerified; +string Model }
-    class PromptTemplate { +int Id; +string Name; +string Category; +string Text; +Apply(userText) string }
-    class AiServiceException { +AiErrorKind Kind; +HttpStatusCode? StatusCode }
+    class ChatRequest {
+        +string Model
+        +List~ChatMessage~ Messages
+    }
+    class ChatMessage {
+        +string Role
+        +string Content
+    }
+    class ChatResponse {
+        +List~ChatChoice~ Choices
+    }
+    class ChatChoice {
+        +ChatMessage Message
+    }
+    class ApiErrorResponse {
+        +ApiError Error
+    }
+    class ApiError {
+        +string Message
+        +string Code
+    }
+    class ModelInfo {
+        +string Id
+        +string Category
+        +bool PaidOnly
+    }
+    class ConversationRecord {
+        +int Id
+        +string Prompt
+        +string Answer
+        +DateTime CreatedAt
+        +string Category
+        +bool IsVerified
+        +string Model
+    }
+    class PromptTemplate {
+        +int Id
+        +string Name
+        +string Category
+        +string Text
+        +Apply(userText) string
+    }
+    class AiServiceException {
+        +AiErrorKind Kind
+        +HttpStatusCode? StatusCode
+    }
 
-    class AiService { +ValidatePrompt(prompt)$ string; +AskAsync(prompt, model, token) Task~string~; +TestConnectionAsync() Task~string~; +GetModelsAsync() Task~IReadOnlyList~ }
-    class ApiKeyService { +SaveAsync(key); +GetAsync(); +Remove(); +HasKeyAsync(); +GetMaskedAsync() }
-    class SettingsService { +string SelectedModel; +int TimeoutSeconds }
-    class DatabaseService { +SaveAsync(record); +GetConversationsAsync(search, category); +GetConversationAsync(id); +DeleteAsync(record); +GetTemplatesAsync(); +SaveTemplateAsync(t); +DeleteTemplateAsync(t) }
-    class IDialogService { <<interface>> +ConfirmAsync(); +AlertAsync(); +GoToAsync() }
+    class AiService {
+        +ValidatePrompt(prompt)$ string
+        +AskAsync(prompt, model, token) Task~string~
+        +TestConnectionAsync() Task~string~
+        +GetModelsAsync() Task~IReadOnlyList~
+    }
+    class ApiKeyService {
+        +SaveAsync(key)
+        +GetAsync()
+        +Remove()
+        +HasKeyAsync()
+        +GetMaskedAsync()
+    }
+    class SettingsService {
+        +AiProvider Provider
+        +string SelectedModel
+        +int TimeoutSeconds
+    }
+    class AiProvider {
+        +string Id
+        +string Name
+        +string BaseUrl
+        +string DefaultModel
+        +string KeyPrefix
+    }
+    class DatabaseService {
+        +SaveAsync(record)
+        +GetConversationsAsync(search, category)
+        +GetConversationAsync(id)
+        +DeleteAsync(record)
+        +GetTemplatesAsync()
+        +SaveTemplateAsync(t)
+        +DeleteTemplateAsync(t)
+    }
+    class IDialogService {
+        <<interface>>
+        +ConfirmAsync()
+        +AlertAsync()
+        +GoToAsync()
+    }
 
-    class ChatViewModel { +Prompt; +Exchanges; +StatusMessage; +IsBusy; +AskCommand; +CancelCommand; +SaveCommand; +CopyCommand; +ShareCommand; +ClearCommand }
-    class ChatExchangeViewModel { +UserText; +SentPrompt; +Answer; +IsPending; +IsSaved }
-    class HistoryViewModel { +Records; +SearchText; +SelectedCategory; +DeleteCommand; +OpenCommand }
-    class DetailViewModel { +Record; +ToggleVerifiedCommand; +CopyCommand; +ShareCommand; +DeleteCommand }
-    class SettingsViewModel { +ApiKeyInput; +MaskedKey; +Models; +SaveKeyCommand; +TestConnectionCommand }
-    class TemplatesViewModel { +Templates; +SaveCommand; +DeleteCommand }
+    class ChatViewModel {
+        +Prompt
+        +Exchanges
+        +StatusMessage
+        +IsBusy
+        +AskCommand
+        +CancelCommand
+        +SaveCommand
+        +CopyCommand
+        +ShareCommand
+        +ClearCommand
+    }
+    class ChatExchangeViewModel {
+        +UserText
+        +SentPrompt
+        +Answer
+        +IsPending
+        +IsSaved
+    }
+    class HistoryViewModel {
+        +Records
+        +SearchText
+        +SelectedCategory
+        +DeleteCommand
+        +OpenCommand
+    }
+    class DetailViewModel {
+        +Record
+        +ToggleVerifiedCommand
+        +CopyCommand
+        +ShareCommand
+        +DeleteCommand
+    }
+    class SettingsViewModel {
+        +ApiKeyInput
+        +MaskedKey
+        +Models
+        +SaveKeyCommand
+        +TestConnectionCommand
+    }
+    class TemplatesViewModel {
+        +Templates
+        +SaveCommand
+        +DeleteCommand
+    }
 
     ChatRequest "1" o-- "*" ChatMessage
     ChatResponse "1" o-- "*" ChatChoice
@@ -125,6 +235,7 @@ classDiagram
     AiService ..> AiServiceException : lanza
     AiService --> ApiKeyService
     AiService --> SettingsService
+    SettingsService --> AiProvider
     DatabaseService ..> ConversationRecord
     DatabaseService ..> PromptTemplate
     ChatViewModel --> AiService

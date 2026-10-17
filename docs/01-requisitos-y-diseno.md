@@ -5,7 +5,7 @@
 Los estudiantes usan asistentes de IA sin conservar lo que preguntaron, sin distinguir qué respuestas verificaron y, a veces, compartiendo datos que no deberían. **AsistenteIA** ofrece un espacio académico para consultar un modelo de IA con plantillas orientadas al estudio. La app guarda un historial local, permite marcar las respuestas contrastadas con fuentes y recuerda los límites y riesgos de la IA.
 
 **Usuarios:** estudiantes universitarios.
-**Restricciones:** la app no puede incluir claves secretas en el código, funciona en Windows o Android y depende de un proveedor externo de IA (Pollinations).
+**Restricciones:** la app no puede incluir claves secretas en el código, funciona en Windows o Android y depende de un proveedor externo de IA (Google Gemini o Pollinations, seleccionable en Configuración).
 
 ## Historias de usuario
 
@@ -56,6 +56,8 @@ Las cuatro pantallas principales están en la barra de pestañas de Shell. **Det
 
 ## Wireframes
 
+Boceto inicial de baja fidelidad (versión 1). La interfaz final cambió con el rediseño: la consulta se muestra como conversación y las acciones Copiar, Compartir y Guardar están en cada respuesta. Capturas de la versión actual: [evidencias/v2](evidencias/v2/README.md).
+
 ```
 ┌──────────── Consultar IA ────────────┐   ┌────────────── Historial ─────────────┐
 │ [Plantilla ▼]  [Categoría ▼] [Editar]│   │ [🔍 Buscar............] [Categoría ▼]│
@@ -74,4 +76,4 @@ Las cuatro pantallas principales están en la barra de pestañas de Shell. **Det
                                            └──────────────────────────────────────┘
 ```
 
-Capturas reales de cada pantalla: carpeta [evidencias](evidencias/).
+Capturas reales de cada pantalla: [evidencias/v2](evidencias/v2/README.md) (versión actual) y [evidencias](evidencias/) (primera versión).

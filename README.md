@@ -61,6 +61,7 @@ docs/            Requisitos, arquitectura, API, riesgos, pruebas, manuales y evi
 | [04 Matriz de riesgos](docs/04-matriz-riesgos.md) | Seguridad, privacidad y uso responsable |
 | [05 Plan de pruebas](docs/05-plan-pruebas.md) | Casos P01–P10 con evidencias |
 | [Informes (PDF)](docs/informes/) | Pruebas funcionales, de calidad, de seguridad y vulnerabilidades, y matriz de riesgos, con capturas. Se regeneran con `python docs/informes/generar_informes.py` |
+| [Documentos de entrega (PDF)](docs/informes/) | Requisitos y decisiones técnicas, arquitectura, diagrama de clases, metodología, consumo REST, historial SQLite CRUD, pantallas y adaptación, manual técnico. Se regeneran con `python docs/informes/generar_documentos.py`; los diagramas están en `docs/diagramas/` |
 | [Manual de usuario (PDF)](docs/manuales/Manual-de-usuario-AsistenteIA.pdf) | Guía paso a paso con capturas. Se regenera con `python docs/manuales/generar_manual.py` |
 | [06 Manual de usuario](docs/06-manual-usuario.md) | Uso de cada pantalla |
 | [07 Manual técnico](docs/07-manual-tecnico.md) | Instalación, configuración y mantenimiento |
