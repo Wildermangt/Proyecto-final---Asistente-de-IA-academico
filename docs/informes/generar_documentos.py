@@ -321,13 +321,17 @@ def doc_metodologia():
                'Manuales, informes en PDF y evidencias. Pendiente: commits de todos los integrantes, video, ejecutable o APK y sustentación.'],
           ], [3.2, 4.4, 1.4, 8]),
           H1('3. Roles del equipo (Fase 14)'),
-          tabla(['Rol', 'Responsabilidad', 'Integrante'], [
-              ['Líder e integración', 'Tablero, ramas, revisiones y versión estable', 'Jeferson Wilderman González Tenjo'],
-              ['Interfaz y accesibilidad', 'XAML, navegación, estilos y pruebas de usabilidad', '(por asignar)'],
-              ['Servicios y datos', 'API REST, seguridad de la credencial y SQLite', '(por asignar)'],
-              ['Calidad y documentación', 'Pruebas, evidencias, manuales y sustentación', '(por asignar)'],
-          ], [4, 8, 5]),
-          P(f'<b>Integrantes del equipo:</b> {g.AUTORES}.'),
+          tabla(['Rol', 'Responsabilidades', 'Integrante'], [
+              ['Director de proyecto', 'Planeación de los sprints, definición de la arquitectura, diseño de la interfaz, '
+               'gestión del repositorio y de las ramas, revisión e integración de los cambios, documentación técnica y '
+               'aprobación de la versión estable', 'Jeferson Wilderman González Tenjo'],
+              ['Ingeniera de servicios y datos', 'Integración con la API REST de IA, manejo de errores HTTP, protección de la '
+               'credencial con SecureStorage y persistencia local con SQLite (CRUD del historial y las plantillas)',
+               'María Alejandra Gómez'],
+              ['Ingeniero de calidad y pruebas (QA)', 'Diseño y ejecución del plan de pruebas P01–P10, pruebas de calidad, '
+               'seguridad y adaptación a pantallas, registro de fallos y evidencias, y verificación de las correcciones',
+               'José Leandro Ocampo'],
+          ], [4.2, 8.6, 4.2]),
           P('Todos los integrantes deben realizar commits, revisar código y comprender el recorrido completo XAML → ViewModel → '
             'servicio REST → JSON → SQLite (condición de sustentación).'),
           H1('4. Prácticas de trabajo'),
