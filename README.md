@@ -27,9 +27,14 @@ Requisitos: Visual Studio 2022/2026 con la carga **Desarrollo de interfaz de usu
 # Windows
 dotnet build AsistenteIA/AsistenteIA.csproj -f net10.0-windows10.0.19041.0 -t:Run
 
-# Android (APK firmado de depuración)
-dotnet publish AsistenteIA/AsistenteIA.csproj -f net10.0-android -c Release
+# Ejecutable de Windows autocontenido (no requiere instalar .NET)
+dotnet publish AsistenteIA/AsistenteIA.csproj -f net10.0-windows10.0.19041.0 -c Release -p:RuntimeIdentifierOverride=win-x64 -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -o publish/windows
+
+# Android: APK firmado con la clave de depuración
+dotnet publish AsistenteIA/AsistenteIA.csproj -f net10.0-android -c Release -p:AndroidPackageFormat=apk -o publish/android
 ```
+
+El ejecutable queda en `publish/windows/AsistenteIA.exe` y el APK en `publish/android/co.edu.usb.asistenteia-Signed.apk`. La versión 1.0 de ambos se entrega aparte (`AsistenteIA-1.0-windows-x64.zip` y `AsistenteIA-1.0-android.apk`) porque `publish/` no se sube al repositorio.
 
 En Visual Studio: abrir `AsistenteIA.slnx`, elegir **Windows Machine** o un emulador Android y pulsar Ejecutar.
 

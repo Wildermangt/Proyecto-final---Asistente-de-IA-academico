@@ -72,7 +72,8 @@
 		<PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.11" />
 		<!-- Fuerza la versión parcheada del motor SQLite nativo (GHSA-2m69-gcr7-jv3q) -->
-		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.14" />
+		<!-- Solo fuera de Android: sus binarios linux-* reemplazan en el APK a los de Android y la app se cierra al iniciar -->
+		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.14" Condition="!$(TargetFramework.Contains('-android'))" />
 		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3.android" Version="2.1.14" Condition="$(TargetFramework.Contains('-android'))" />
 	</ItemGroup>
 

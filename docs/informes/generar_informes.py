@@ -315,7 +315,7 @@ def informe_calidad():
           P('Comprobar que el producto compila limpio, se adapta a pantallas pequeñas y grandes, mantiene un contraste '
             'legible en tema claro y oscuro, y no se cierra ni se bloquea en uso real.'),
           H1('3. Alcance'),
-          *lista(['Compilación para Windows y Android (Q01, Q02).',
+          *lista(['Compilación para Windows y Android (Q01, Q02) y ejecución de los entregables Release: APK y ejecutable (Q03, Q04).',
                   'Diseño responsive en 400, 820 y 1400 píxeles (A12).',
                   'Tema oscuro y contraste de los mensajes de estado (F17).',
                   'Estabilidad con respuestas largas y prueba de estrés (F18, F19).'])]
@@ -324,6 +324,8 @@ def informe_calidad():
           tabla(['Caso', 'Verificación', 'Resultado', 'Estado'], [
               ['Q01', 'dotnet build para Windows', '0 errores, 0 advertencias', estado('Aprobado')],
               ['Q02', 'dotnet build para Android', '0 errores', estado('Aprobado')],
+              ['Q03', 'APK Release en emulador Android 15', 'Abre y lee SQLite (tras corregir F20)', estado('Aprobado')],
+              ['Q04', 'Ejecutable Windows Release autocontenido', 'Abre y lee el historial', estado('Aprobado')],
               ['A12', 'Responsive 400, 820 y 1400 px', 'Sin recortes ni solapamientos', estado('Aprobado')],
               ['F17', 'Tema oscuro', 'Error en rojo legible y avisos con variante oscura', estado('Aprobado')],
               ['Contraste', 'Pares de color texto/fondo', 'Todos ≥ 4,5:1 (WCAG AA) en tema claro y oscuro', estado('Aprobado')],
@@ -332,6 +334,9 @@ def informe_calidad():
           H2('Q01–Q02. Compilación'),
           fig('Q01-compilacion-windows.png', 'Q01: compilación para Windows sin errores ni advertencias.', alto_max=4 * cm),
           fig('Q02-compilacion-android.png', 'Q02: compilación para Android sin errores.', alto_max=4 * cm),
+          H2('Q03–Q04. Entregables ejecutables'),
+          figs_lado([('Q03-apk-android-inicio.png', 'Q03: APK en el emulador Pixel 6 (Android 15).'),
+                     ('Q04-ejecutable-windows-inicio.png', 'Q04: ejecutable de Windows autocontenido.')]),
           H2('A12. Diseño responsive'),
           P('Se capturaron Inicio, Consultar (con una respuesta en pantalla), Historial y Configuración en tres anchos. '
             'Los controles se reacomodan con FlexLayout y Grid, el contenido se limita a 1000 px en escritorio y, en móvil, '
@@ -359,6 +364,11 @@ def informe_calidad():
                'La cursiva (*texto*) se quitaba antes de separar las negritas (**texto**).',
                'Primero se separan las negritas (admitiendo cursiva adentro) y luego la cursiva. Sin asteriscos sobrantes en '
                'todas las respuestas guardadas.'],
+              ['F20', 'El APK se cerraba al iniciar en Android (TypeInitializationException en SQLiteConnection).',
+               'El paquete genérico SQLitePCLRaw.lib.e_sqlite3, agregado para forzar la versión parcheada, metía sus binarios '
+               'linux-x64 y linux-arm64 en el APK y reemplazaba los de Android ("library libc.so.6 not found").',
+               'La referencia al paquete genérico quedó solo para Windows; Android usa SQLitePCLRaw.lib.e_sqlite3.android '
+               '2.1.14. Verificado: el APK abre y lee SQLite (Q03).'],
               ['F17', 'En tema oscuro el estado (#404040) casi no se leía y el aviso amarillo no cambiaba.',
                'Colores fijos sin variante oscura.', 'AppThemeBinding en el estilo StatusLabel y en WarningCard; DataTrigger sobre IsError.'],
           ], [1.2, 3.8, 6.6, 5.4]),

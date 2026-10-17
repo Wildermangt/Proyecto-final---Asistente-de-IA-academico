@@ -93,6 +93,8 @@ Resultados y análisis: [05-plan-pruebas.md](../../05-plan-pruebas.md#ejecución
 |---|---|---|
 | Q01 | Compilación Windows: 0 errores, 0 advertencias | ![](Q01-compilacion-windows.png) |
 | Q02 | Compilación Android: 0 errores | ![](Q02-compilacion-android.png) |
+| Q03 | APK Release abierto en el emulador (Android 15) | ![](Q03-apk-android-inicio.png) |
+| Q04 | Ejecutable de Windows Release autocontenido | ![](Q04-ejecutable-windows-inicio.png) |
 | S01 | Paquetes con vulnerabilidades conocidas: ninguno | ![](S01-paquetes-vulnerables.png) |
 | S02 | Paquetes obsoletos: ninguno | ![](S02-paquetes-obsoletos.png) |
 | S03 | Claves de API en el repositorio: ninguna | ![](S03-claves-en-el-repositorio.png) |

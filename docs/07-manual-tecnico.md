@@ -22,11 +22,13 @@
 dotnet build AsistenteIA/AsistenteIA.csproj -f net10.0-windows10.0.19041.0           # Windows
 dotnet build AsistenteIA/AsistenteIA.csproj -f net10.0-windows10.0.19041.0 -t:Run    # Ejecutar
 dotnet build AsistenteIA/AsistenteIA.csproj -f net10.0-android                        # Android
-dotnet publish AsistenteIA/AsistenteIA.csproj -f net10.0-android -c Release           # APK
+dotnet publish AsistenteIA/AsistenteIA.csproj -f net10.0-android -c Release -p:AndroidPackageFormat=apk -o publish/android   # APK
+dotnet publish AsistenteIA/AsistenteIA.csproj -f net10.0-windows10.0.19041.0 -c Release -p:RuntimeIdentifierOverride=win-x64 -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -o publish/windows   # Ejecutable de Windows
 ```
 
-El APK queda en `AsistenteIA/bin/Release/net10.0-android/publish/co.edu.usb.asistenteia-Signed.apk`.
-El ejecutable de Windows queda en `AsistenteIA/bin/<Config>/net10.0-windows10.0.19041.0/win-x64/AsistenteIA.exe` (`WindowsPackageType=None`, sin empaquetar).
+El APK queda en `publish/android/co.edu.usb.asistenteia-Signed.apk` (firmado con la clave de depuración) y el ejecutable de Windows en `publish/windows/AsistenteIA.exe` (`WindowsPackageType=None`, sin empaquetar y autocontenido: no requiere instalar .NET ni Windows App SDK). En Windows se usa `RuntimeIdentifierOverride` y no `-r`, porque `-r` también se aplica a la restauración de Android y falla.
+
+> **Paquete nativo de SQLite.** `SQLitePCLRaw.lib.e_sqlite3` (2.1.14, parcheada) se referencia solo fuera de Android. En Android se usa `SQLitePCLRaw.lib.e_sqlite3.android`: si se incluye el paquete genérico, sus binarios `linux-*` reemplazan en el APK a los de Android y la app se cierra al iniciar (fallo F20).
 
 ## Configuración
 
