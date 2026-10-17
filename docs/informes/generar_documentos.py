@@ -151,6 +151,7 @@ def diagrama(nombre, pie, ancho=17 * cm, alto_max=20 * cm):
 def portada(titulo, subtitulo):
     p = g.portada(titulo, subtitulo)
     p[-3] = P(f'<b>Fecha:</b> {g.FECHA}', 'cen')   # en lugar de "Fecha de ejecución"
+    p[-2] = P('<b>Versión:</b> rama <font name="Courier">main</font> (versión final del proyecto)', 'cen')
     return p
 
 
@@ -318,7 +319,7 @@ def doc_metodologia():
               ['4. Persistencia y calidad', 'SQLite CRUD, historial, diez pruebas y correcciones', '10, 12–13',
                'DatabaseService con CRUD, historial con búsqueda y verificación, matriz de riesgos, pruebas P01–P10 y fallos F1–F19 corregidos.'],
               ['5. Entrega', 'Manual, video, informe, repositorio, APK o ejecutable y sustentación', '14',
-               'Manuales, informes en PDF y evidencias. Pendiente: commits de todos los integrantes, video, ejecutable o APK y sustentación.'],
+               'Manuales, informes en PDF, evidencias y video de funcionamiento (presentado en clase). Pendiente: commits de todos los integrantes, ejecutable o APK y sustentación individual.'],
           ], [3.2, 4.4, 1.4, 8]),
           H1('3. Roles del equipo (Fase 14)'),
           tabla(['Rol', 'Responsabilidades', 'Integrante'], [

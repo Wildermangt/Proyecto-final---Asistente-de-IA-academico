@@ -121,7 +121,8 @@ def portada(titulo, subtitulo):
             P(f'<b>Autores:</b> {AUTORES}', 'cen'),
             P('<b>Docente:</b> Mg. Sandra Esperanza Sánchez Barragán', 'cen'),
             P(f'<b>Fecha de ejecución:</b> {FECHA}', 'cen'),
-            P('<b>Versión evaluada:</b> rama <font name="Courier">feat/rediseno-interfaz</font> (commit 6a15fc1)', 'cen'),
+            P('<b>Versión evaluada:</b> commit <font name="Courier">6a15fc1</font>, interfaz rediseñada (integrada en '
+              '<font name="Courier">main</font>)', 'cen'),
             PageBreak()]
 
 
