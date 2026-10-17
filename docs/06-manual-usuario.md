@@ -1,5 +1,7 @@
 # 06. Manual de usuario: AsistenteIA
 
+> Versión en PDF con capturas: [manuales/Manual-de-usuario-AsistenteIA.pdf](manuales/Manual-de-usuario-AsistenteIA.pdf)
+
 ## Tabla de contenidos
 
 1. [Introducción](#1-introducción)
@@ -51,7 +53,7 @@ La app **no requiere cuenta ni contraseña**: se abre directamente. La única cr
 3. Pulse **Guardar clave**. Aparecerá "Clave configurada: ••••XXXX" (solo los últimos 4 caracteres).
 4. Pulse **Probar conexión**. Si todo está bien, verá "Conexión exitosa…".
 
-![Clave oculta al escribir](evidencias/P04a-clave-oculta-al-escribir.png)
+![Clave oculta al escribir](evidencias/v2/P04a-clave-oculta-al-escribir.png)
 
 ### 2.2 Interfaz principal
 
@@ -64,7 +66,7 @@ La pantalla de **Inicio** muestra:
 - **accesos rápidos** en tarjetas: Consultar IA, Historial (con el resumen de conversaciones guardadas y verificadas), Plantillas y Configuración;
 - recomendaciones de uso responsable.
 
-![Inicio](evidencias/04-pantalla-inicio.png)
+![Inicio](evidencias/v2/04-inicio.png)
 
 En pantallas pequeñas, las pestañas que no caben se agrupan en el botón **⋯**.
 
@@ -87,7 +89,7 @@ En pantallas pequeñas, las pestañas que no caben se agrupan en el botón **⋯
 5. Pulse **Consultar**. Su pregunta aparece como burbuja a la derecha; mientras espera, la burbuja de la IA muestra "Pensando la respuesta…" y el mensaje de estado dice "Consultando el servicio…".
 6. Si tarda demasiado, pulse **Cancelar** (aparece en lugar de Consultar mientras se espera). Si la consulta se cancela o falla, su texto vuelve al editor para reintentar.
 
-![Consultar](evidencias/05-pantalla-consultar.png)
+![Consultar](evidencias/v2/P01b-respuesta-recibida.png)
 
 Para crear o modificar plantillas, pulse **Plantillas**. Seleccione una de la lista para editarla o pulse **Nueva**. Use `{consulta}` donde debe ir su pregunta.
 
@@ -115,8 +117,8 @@ En **Historial**, toque una tarjeta para abrir el detalle. Para eliminar use el 
 | Filtro por categoría | Historial, selector "Categoría" | Muestra solo esa categoría (o "Todas") |
 | Orden por fecha | Historial | Las más recientes aparecen primero, con fecha y hora |
 | Modelo de IA | Configuración | Elige entre los modelos gratuitos del proveedor. Unos son más rápidos y otros más detallados. |
-| Tiempo máximo de espera | Configuración | Segundos (de 1 a 120) antes de cancelar automáticamente una consulta |
-| Plantillas | Consultar → Editar plantillas | Orientan el tipo y el nivel de detalle de la respuesta |
+| Tiempo máximo de espera | Configuración | Segundos (de 1 a 120) antes de cancelar automáticamente una consulta. Con el plan gratuito de Gemini se recomienda 120 s |
+| Plantillas | Consultar → Plantillas | Orientan el tipo y el nivel de detalle de la respuesta |
 
 ---
 
@@ -126,7 +128,7 @@ En **Historial**, toque una tarjeta para abrir el detalle. Para eliminar use el 
 
 | Dato | Dónde queda | Quién lo ve |
 |---|---|---|
-| Su pregunta | Se envía al proveedor de IA (Pollinations) para generar la respuesta | El proveedor, según sus políticas |
+| Su pregunta | Se envía al proveedor de IA elegido (Google Gemini o Pollinations) para generar la respuesta | El proveedor, según sus políticas |
 | Historial guardado | Solo en su dispositivo (base de datos local SQLite) | Solo usted |
 | Clave de la API | Cifrada en el almacenamiento seguro del sistema (Windows DPAPI / Android Keystore) | Nadie: nunca se muestra completa ni se guarda en el código |
 
