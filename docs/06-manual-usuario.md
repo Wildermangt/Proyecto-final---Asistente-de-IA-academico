@@ -166,7 +166,7 @@ En **Historial**, toque una tarjeta para abrir el detalle. Para eliminar use el 
 
 | Canal | Para qué |
 |---|---|
-| Equipo de desarrollo (integrantes del proyecto) | Errores de la aplicación y sugerencias. _Completar con los correos del equipo._ |
+| Equipo de desarrollo: Jeferson Wilderman González Tenjo, María Alejandra Gómez y José Leandro Ocampo | Errores de la aplicación y sugerencias. |
 | Docente: Mg. Sandra Esperanza Sánchez Barragán | Dudas académicas sobre el proyecto |
 | Pollinations: <https://enter.pollinations.ai> | Claves, saldo y estado del servicio de IA |
 

@@ -39,7 +39,7 @@ def manual():
          P('AsistenteIA · asistente académico con inteligencia artificial', 'sub'), Spacer(1, 0.8 * cm),
          fig('04-inicio.png', 'Pantalla de Inicio de AsistenteIA.', ancho=12 * cm, alto_max=8 * cm),
          Spacer(1, 1 * cm),
-         P('<b>Autor:</b> Jeferson Wilderman González Tenjo y equipo', 'cen'),
+         P(f'<b>Autores:</b> {g.AUTORES}', 'cen'),
          P('<b>Docente:</b> Mg. Sandra Esperanza Sánchez Barragán', 'cen'),
          P(f'<b>Versión del manual:</b> 2.0 · {g.FECHA}', 'cen'), PageBreak()]
 
@@ -200,7 +200,7 @@ def manual():
 
           H1('12. Soporte'),
           tabla(['Canal', 'Para qué'], [
-              ['Equipo de desarrollo (integrantes del proyecto)', 'Errores de la aplicación y sugerencias.'],
+              ['Equipo de desarrollo: ' + g.AUTORES, 'Errores de la aplicación y sugerencias.'],
               ['Docente: Mg. Sandra Esperanza Sánchez Barragán', 'Dudas académicas sobre el proyecto.'],
               ['Google AI Studio / Pollinations', 'Claves, cuotas, saldo y estado del servicio de IA.'],
           ], [7, 10]),
@@ -209,7 +209,7 @@ def manual():
 
     ruta = os.path.join(AQUI, 'Manual-de-usuario-AsistenteIA.pdf')
     doc = SimpleDocTemplate(ruta, pagesize=A4, leftMargin=2 * cm, rightMargin=2 * cm, topMargin=2 * cm, bottomMargin=2 * cm,
-                            title='AsistenteIA · Manual de usuario', author='Jeferson Wilderman González Tenjo y equipo',
+                            title='AsistenteIA · Manual de usuario', author=g.AUTORES,
                             subject='Proyecto final .NET MAUI e IA')
     doc.build(s, onFirstPage=g.pie_pagina(NOMBRE), onLaterPages=g.pie_pagina(NOMBRE))
     print('generado', ruta)

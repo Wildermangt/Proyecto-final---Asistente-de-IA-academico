@@ -46,6 +46,7 @@ st = {
 
 ANCHO = A4[0] - 4 * cm
 FECHA = '16 de octubre de 2026'
+AUTORES = 'Jeferson Wilderman González Tenjo, María Alejandra Gómez y José Leandro Ocampo'
 _figura = [0]
 
 
@@ -117,7 +118,7 @@ def portada(titulo, subtitulo):
             P(titulo, 'tit'), Spacer(1, 0.4 * cm), P(subtitulo, 'sub'), Spacer(1, 0.3 * cm),
             P('Proyecto final: <b>AsistenteIA</b>, asistente académico móvil con .NET MAUI y una API REST de IA', 'cen'),
             Spacer(1, 3 * cm),
-            P('<b>Autor:</b> Jeferson Wilderman González Tenjo y equipo', 'cen'),
+            P(f'<b>Autores:</b> {AUTORES}', 'cen'),
             P('<b>Docente:</b> Mg. Sandra Esperanza Sánchez Barragán', 'cen'),
             P(f'<b>Fecha de ejecución:</b> {FECHA}', 'cen'),
             P('<b>Versión evaluada:</b> rama <font name="Courier">feat/rediseno-interfaz</font> (commit 6a15fc1)', 'cen'),
@@ -160,7 +161,7 @@ def construir(archivo, nombre, historia):
     ruta = os.path.join(AQUI, archivo)
     doc = SimpleDocTemplate(ruta, pagesize=A4, leftMargin=2 * cm, rightMargin=2 * cm, topMargin=2 * cm,
                             bottomMargin=2 * cm, title=f'AsistenteIA · {nombre}',
-                            author='Jeferson Wilderman González Tenjo y equipo', subject='Proyecto final .NET MAUI e IA')
+                            author=AUTORES, subject='Proyecto final .NET MAUI e IA')
     doc.build(historia, onFirstPage=pie_pagina(nombre), onLaterPages=pie_pagina(nombre))
     print('generado', ruta)
 

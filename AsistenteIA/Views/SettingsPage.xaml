@@ -81,7 +81,7 @@
                     </FormattedString></Label.FormattedText></Label>
                     <Label LineBreakMode="WordWrap"><Label.FormattedText><FormattedString>
                         <Span Text="Autoría: " FontAttributes="Bold" />
-                        <Span Text="Jeferson Wilderman González Tenjo y equipo. Programación Avanzada y Aplicada, VI semestre, Tecnología en Desarrollo de Software, Universidad de San Buenaventura. Docente: Mg. Sandra Esperanza Sánchez Barragán." />
+                        <Span Text="Jeferson Wilderman González Tenjo, María Alejandra Gómez y José Leandro Ocampo. Programación Avanzada y Aplicada, VI semestre, Tecnología en Desarrollo de Software, Universidad de San Buenaventura. Docente: Mg. Sandra Esperanza Sánchez Barragán." />
                     </FormattedString></Label.FormattedText></Label>
                     <Label LineBreakMode="WordWrap"><Label.FormattedText><FormattedString>
                         <Span Text="Proveedor y fuentes: " FontAttributes="Bold" />

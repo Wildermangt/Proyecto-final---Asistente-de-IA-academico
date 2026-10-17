@@ -4,6 +4,10 @@ Asistente académico móvil hecho con **.NET MAUI** que envía consultas a un mo
 
 Proyecto final de Programación Avanzada y Aplicada, VI semestre, Tecnología en Desarrollo de Software, Universidad de San Buenaventura.
 
+**Integrantes:** Jeferson Wilderman González Tenjo, María Alejandra Gómez y José Leandro Ocampo.
+
+**Docente:** Mg. Sandra Esperanza Sánchez Barragán.
+
 ## Tecnologías
 
 | Elemento | Uso |

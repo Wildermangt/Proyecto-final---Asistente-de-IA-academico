@@ -159,7 +159,7 @@ def construir(archivo, nombre, historia, horizontal=False):
     tam = landscape(A4) if horizontal else A4
     doc = SimpleDocTemplate(ruta, pagesize=tam, leftMargin=2 * cm, rightMargin=2 * cm, topMargin=2 * cm,
                             bottomMargin=2 * cm, title=f'AsistenteIA · {nombre}',
-                            author='Jeferson Wilderman González Tenjo y equipo', subject='Proyecto final .NET MAUI e IA')
+                            author=g.AUTORES, subject='Proyecto final .NET MAUI e IA')
 
     def pie(c, d):
         c.saveState(); c.setFont('Segoe', 8); c.setFillColor(g.GRIS)
@@ -327,6 +327,7 @@ def doc_metodologia():
               ['Servicios y datos', 'API REST, seguridad de la credencial y SQLite', '(por asignar)'],
               ['Calidad y documentación', 'Pruebas, evidencias, manuales y sustentación', '(por asignar)'],
           ], [4, 8, 5]),
+          P(f'<b>Integrantes del equipo:</b> {g.AUTORES}.'),
           P('Todos los integrantes deben realizar commits, revisar código y comprender el recorrido completo XAML → ViewModel → '
             'servicio REST → JSON → SQLite (condición de sustentación).'),
           H1('4. Prácticas de trabajo'),
