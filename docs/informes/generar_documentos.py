@@ -319,7 +319,7 @@ def doc_metodologia():
               ['4. Persistencia y calidad', 'SQLite CRUD, historial, diez pruebas y correcciones', '10, 12–13',
                'DatabaseService con CRUD, historial con búsqueda y verificación, matriz de riesgos, pruebas P01–P10 y fallos F1–F20 corregidos.'],
               ['5. Entrega', 'Manual, video, informe, repositorio, APK o ejecutable y sustentación', '14',
-               'Manuales, informes en PDF, evidencias, video de funcionamiento (presentado en clase), ejecutable de Windows y APK 1.0. Pendiente: commits de todos los integrantes y sustentación individual.'],
+               'Manuales, informes en PDF, evidencias, video de funcionamiento (presentado en clase), ejecutable de Windows, APK 1.0 y sustentación individual (realizada en clase). Pendiente: commits de todos los integrantes.'],
           ], [3.2, 4.4, 1.4, 8]),
           H1('3. Roles del equipo (Fase 14)'),
           tabla(['Rol', 'Responsabilidades', 'Integrante'], [
