@@ -429,7 +429,200 @@ def informe_seguridad():
     construir('Informe-seguridad-vulnerabilidades.pdf', 'Informe de seguridad y vulnerabilidades', s)
 
 
+# ===================================================== 4. MATRIZ DE RIESGOS =====================================================
+# (código, riesgo, causa, consecuencia, P inherente, I inherente, control, dónde, P residual, I residual, evidencias)
+RIESGOS = [
+    ('R1', 'Respuesta incorrecta o inventada', 'El modelo de IA puede "alucinar" datos, fechas o fuentes.',
+     'El estudiante aprende o entrega información falsa.', 3, 3,
+     'Prompt de sistema que pide indicar incertidumbre y no inventar fuentes; aviso de verificación en cada respuesta y en el '
+     'texto compartido; marca de "verificada" en el detalle; recomendación en Inicio.',
+     'AiService.SystemPrompt, ChatPage.xaml, DetailViewModel.ToggleVerifiedAsync', 3, 2,
+     [('P01d-acciones-de-la-respuesta.png', 'Aviso de verificación bajo cada respuesta.'),
+      ('11b-detalle-marcada-verificada.png', 'Respuesta marcada como verificada.')]),
+    ('R2', 'Datos personales en el prompt', 'El usuario escribe datos propios o de terceros en la consulta.',
+     'Los datos llegan al proveedor externo de IA.', 2, 3,
+     'Avisos visibles en Consultar, Configuración e Inicio; plantillas de propósito académico; historial solo en el dispositivo; '
+     'las consultas solo se guardan si el usuario pulsa Guardar.',
+     'ChatPage.xaml, SettingsPage.xaml, HomePage.xaml', 2, 2,
+     [('05-consultar-vacia.png', 'Aviso de privacidad bajo el cuadro de consulta.'),
+      ('07-configuracion.png', 'Aviso destacado en Configuración.')]),
+    ('R3', 'Exposición de credenciales', 'La clave de la API queda en el código, el repositorio, una captura o la consola.',
+     'Uso indebido de la clave y consumo de cuota o saldo por terceros.', 2, 3,
+     'SecureStorage (DPAPI/Keystore), Entry IsPassword, clave enmascarada (••••1234), sin registros en consola, .gitignore, '
+     'clave tapada en las evidencias; verificado con git grep (S03).',
+     'ApiKeyService, SettingsViewModel, .gitignore', 1, 3,
+     [('P04a-clave-oculta-al-escribir.png', 'La clave se oculta al escribir.'),
+      ('S03-claves-en-el-repositorio.png', 'Ninguna clave en el repositorio.')]),
+    ('R4', 'Dependencia de un proveedor', 'El proveedor cambia modelos, precios, cuotas o autenticación, o deja de funcionar.',
+     'La aplicación no puede responder consultas.', 2, 2,
+     'Proveedor seleccionable (Google Gemini o Pollinations) con una clave por proveedor; modelo configurable con lista '
+     'dinámica (GET /models) y respaldo local; formato estándar compatible con OpenAI (AiProvider).',
+     'SettingsService, AiService.GetModelsAsync, AiProvider', 2, 2,
+     [('07-configuracion.png', 'Selector de proveedor y modelo.')]),
+    ('R5', 'Contenido inapropiado', 'El modelo genera contenido fuera del propósito académico.',
+     'Uso indebido de la herramienta o respuestas ofensivas.', 1, 2,
+     'Propósito académico definido en el prompt de sistema y en Acerca de; la IA no se presenta como autoridad; los fallos se '
+     'reportan al docente o al equipo.', 'AiService, SettingsPage.xaml', 1, 1,
+     [('07b-configuracion-acerca-de.png', 'Sección Acerca de: finalidad y limitaciones.')]),
+    ('R6', 'Falta de autoría', 'No queda registro de qué hizo el equipo y qué hizo la IA.',
+     'El equipo no puede sustentar el producto.', 2, 2,
+     'Prompts conservados en el historial, commits descriptivos en Git y declaración de uso de IA (08-declaracion-uso-ia.md).',
+     'ConversationRecord.Prompt, git log, docs/08-declaracion-uso-ia.md', 1, 2, []),
+    ('R7', 'Indisponibilidad de red o del servicio', 'Sin internet, red bloqueada o servicio caído.',
+     'La consulta falla.', 2, 2,
+     'Revisión de conectividad, mensajes por código HTTP, reintento automático ante 503/429, tiempo de espera configurable y '
+     'cancelación; la app no se cierra (P03, P05, P06).', 'AiService.SendChatAsync, ChatViewModel', 2, 1,
+     [('P03a-sin-conexion-mensaje.png', 'Mensaje sin conexión (P03).'),
+      ('P06b-consulta-cancelada.png', 'Consulta cancelada sin bloquear la interfaz (P06).')]),
+    ('R8', 'Dependencias vulnerables', 'Un paquete NuGet o una librería nativa con vulnerabilidades conocidas.',
+     'Puerta de entrada a ataques sobre el dispositivo o los datos.', 1, 3,
+     'dotnet list package --vulnerable (S01) y --deprecated (S02) sin resultados; SQLite nativo fijado en versión parcheada.',
+     'AsistenteIA.csproj', 1, 2,
+     [('S01-paquetes-vulnerables.png', 'Ningún paquete vulnerable.')]),
+    ('R9', 'Pérdida del historial', 'Cierre o reinicio de la aplicación, o eliminación accidental.',
+     'El estudiante pierde conversaciones guardadas.', 1, 1,
+     'SQLite en FileSystem.AppDataDirectory, persistente entre reinicios (P09); eliminar pide confirmación (P08).',
+     'DatabaseService', 1, 1,
+     [('P08b-confirmacion-eliminar.png', 'Confirmación antes de eliminar (P08).')]),
+    ('R10', 'Cierre inesperado de la aplicación (nuevo)', 'Fallo de MAUI para Windows al dibujar respuestas largas con Spans de solo salto de línea (F18).',
+     'Se pierde la conversación en curso y la confianza del usuario.', 2, 3,
+     'Control MarkdownView (una etiqueta por párrafo, sin saltos de línea en Spans); ScrollView en lugar de CollectionView; '
+     'registro errores.log de excepciones no controladas; prueba de estrés con tres consultas largas sin cierres.',
+     'Controls/MarkdownView.cs, Views/ChatPage.xaml, Platforms/Windows/App.xaml.cs', 1, 2,
+     [('P01c-respuesta-con-formato.png', 'Respuesta larga mostrada sin cierres después de la corrección.')]),
+    ('R11', 'Límites de cuota del proveedor gratuito (nuevo)', 'El plan gratuito de Gemini limita las solicitudes por minuto y por día.',
+     'Error 429 y consultas rechazadas hasta que se renueva la cuota.', 3, 2,
+     'Mensaje claro con el texto del proveedor ("Error 429: demasiadas solicitudes o cuota agotada…"); reintento automático; '
+     'proveedor alternativo seleccionable; guía en el manual de usuario.', 'AiService.CreateHttpErrorAsync, SettingsPage.xaml', 2, 2, []),
+    ('R12', 'Latencia alta del proveedor (nuevo)', 'El modelo gratuito tardó más de 60 s en respuestas largas durante las pruebas.',
+     'Tiempo de espera agotado y la consulta debe repetirse.', 2, 2,
+     'Tiempo máximo configurable (1 a 120 s, recomendado 120 s); botón Cancelar; el texto vuelve al editor para reintentar.',
+     'SettingsService.TimeoutSeconds, ChatViewModel.RestorePrompt', 2, 1,
+     [('P05b-tiempo-agotado.png', 'Tiempo agotado con el texto devuelto al editor.')]),
+]
+ESCALA = {3: 'Alta', 2: 'Media', 1: 'Baja'}
+ESCALA_I = {3: 'Alto', 2: 'Medio', 1: 'Bajo'}
+
+
+def nivel(p, i):
+    n = p * i
+    if n >= 6:
+        return n, 'Alto', colors.HexColor('#F2B8B5')
+    if n >= 3:
+        return n, 'Medio', colors.HexColor('#FFE7A6')
+    return n, 'Bajo', colors.HexColor('#C9EBD4')
+
+
+def etiqueta_nivel(p, i):
+    n, txt, _ = nivel(p, i)
+    color = {'Alto': '#B3261E', 'Medio': '#955A00', 'Bajo': '#166B33'}[txt]
+    return f'<font color="{color}"><b>{txt} ({n})</b></font>'
+
+
+def mapa_calor(titulo, residual):
+    celdas = {}
+    for r in RIESGOS:
+        p, i = (r[8], r[9]) if residual else (r[4], r[5])
+        celdas.setdefault((p, i), []).append(r[0])
+    data = [[P('<b>Impacto ↓ / Probabilidad →</b>', 'td'), P('<b>Baja (1)</b>', 'td'), P('<b>Media (2)</b>', 'td'), P('<b>Alta (3)</b>', 'td')]]
+    for i in (3, 2, 1):
+        fila = [P(f'<b>{ESCALA_I[i]} ({i})</b>', 'td')]
+        for p in (1, 2, 3):
+            fila.append(P('<b>' + ', '.join(celdas.get((p, i), [])) + '</b>', 'td'))
+        data.append(fila)
+    t = Table(data, colWidths=[4.4 * cm, 4.2 * cm, 4.2 * cm, 4.2 * cm], rowHeights=[0.8 * cm, 1.5 * cm, 1.5 * cm, 1.5 * cm])
+    estilo = [('GRID', (0, 0), (-1, -1), 0.6, colors.white), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+              ('ALIGN', (1, 1), (-1, -1), 'CENTER'), ('BACKGROUND', (0, 0), (-1, 0), SUAVE),
+              ('BACKGROUND', (0, 1), (0, -1), SUAVE)]
+    for fi, i in enumerate((3, 2, 1), 1):
+        for ci, p in enumerate((1, 2, 3), 1):
+            estilo.append(('BACKGROUND', (ci, fi), (ci, fi), nivel(p, i)[2]))
+    t.setStyle(TableStyle(estilo))
+    return KeepTogether([H2(titulo), t, Spacer(1, 4)])
+
+
+def informe_riesgos():
+    s = portada('Informe de la matriz de riesgos', 'Privacidad, seguridad, uso responsable y riesgos técnicos')
+    s += [H1('1. Introducción'),
+          P('Este informe presenta la matriz de riesgos de AsistenteIA exigida en la Fase 12 de la guía del proyecto '
+            '("Aplicar uso responsable de inteligencia artificial"). Identifica los riesgos de privacidad, seguridad, uso '
+            'responsable y operación, evalúa su nivel antes y después de los controles, y enlaza cada control con el lugar del '
+            'código donde está implementado y con la evidencia de las pruebas.'),
+          H1('2. Objetivo'),
+          P('Argumentar las decisiones de seguridad, privacidad, ética y accesibilidad de la aplicación, mostrando que cada '
+            'riesgo relevante tiene un control implementado y verificado, y cuál es el riesgo que permanece.'),
+          H1('3. Alcance'),
+          *lista(['Los seis riesgos obligatorios de la guía (R1–R6).',
+                  'Tres riesgos operativos identificados en el diseño (R7–R9).',
+                  'Tres riesgos nuevos encontrados durante las pruebas del 16 de octubre de 2026 (R10–R12).']),
+          H1('4. Metodología'),
+          P('Cada riesgo se evalúa con una escala de tres niveles para la probabilidad y el impacto. El nivel de riesgo es el '
+            'producto de ambos valores. Se evalúa dos veces: el <b>riesgo inherente</b> (sin controles) y el <b>riesgo residual</b> '
+            '(con los controles implementados y verificados en las pruebas).'),
+          tabla(['Valor', 'Probabilidad', 'Impacto'], [
+              ['3', 'Alta: ocurre con frecuencia en el uso normal', 'Alto: daño a la persona, a sus datos o a la entrega académica'],
+              ['2', 'Media: puede ocurrir en algunos casos', 'Medio: afecta el uso, pero se recupera'],
+              ['1', 'Baja: poco probable', 'Bajo: molestia menor'],
+          ], [1.6, 7.2, 8.2]), Spacer(1, 6),
+          tabla(['Nivel = P × I', 'Clasificación', 'Tratamiento'], [
+              ['6 a 9', etiqueta_nivel(3, 2).replace(' (6)', ''), 'Requiere control obligatorio y seguimiento'],
+              ['3 a 4', etiqueta_nivel(2, 2).replace(' (4)', ''), 'Requiere control y revisión periódica'],
+              ['1 a 2', etiqueta_nivel(1, 1).replace(' (1)', ''), 'Se acepta con controles básicos'],
+          ], [3.5, 3.5, 10]),
+          PageBreak(), H1('5. Matriz de riesgos'),
+          tabla(['#', 'Riesgo', 'P', 'I', 'Inherente', 'Control principal', 'Residual'],
+                [[r[0], r[1], ESCALA[r[4]], ESCALA_I[r[5]], etiqueta_nivel(r[4], r[5]),
+                  r[6].split(';')[0].rstrip('.') + '.', etiqueta_nivel(r[8], r[9])] for r in RIESGOS],
+                [1.1, 3.2, 1.5, 1.5, 2.1, 5.3, 2.3]),
+          Spacer(1, 8),
+          mapa_calor('Mapa de calor del riesgo inherente (sin controles)', residual=False),
+          mapa_calor('Mapa de calor del riesgo residual (con controles)', residual=True),
+          P('Con los controles, ningún riesgo de privacidad o seguridad queda en nivel alto. R1 (respuesta incorrecta) sigue '
+            'siendo el mayor riesgo residual porque depende del modelo de IA y no de la aplicación: la app reduce su impacto con '
+            'avisos y la marca de verificación, pero la responsabilidad final de contrastar la información es del estudiante.'),
+          PageBreak(), H1('6. Fichas de riesgo')]
+    for r in RIESGOS:
+        cod, nom, causa, cons, pi, ii, ctrl, donde, pr, ir, figs = r
+        bloque = [H2(f'{cod}. {nom}'),
+                  tabla(['Elemento', 'Descripción'], [
+                      ['Causa', causa], ['Consecuencia', cons],
+                      ['Riesgo inherente', f'Probabilidad {ESCALA[pi]} × impacto {ESCALA_I[ii]} = {etiqueta_nivel(pi, ii)}'],
+                      ['Control implementado', ctrl], ['Dónde está', f'<font name="Courier" size="7.5">{donde}</font>'],
+                      ['Riesgo residual', f'Probabilidad {ESCALA[pr]} × impacto {ESCALA_I[ir]} = {etiqueta_nivel(pr, ir)}'],
+                  ], [3.6, 13.4]), Spacer(1, 6)]
+        if len(figs) == 2:
+            bloque.append(figs_lado(figs, 6.5 * cm))
+        elif len(figs) == 1:
+            bloque.append(fig(figs[0][0], figs[0][1], alto_max=7 * cm))
+        elif cod == 'R11':
+            bloque.append(P('<i>Evidencia textual registrada en las pruebas:</i> "Error 429: demasiadas solicitudes o cuota '
+                            'agotada. Espere un momento e intente de nuevo. (Proveedor: You exceeded your current quota…)". '
+                            'La aplicación siguió abierta y mostró el mensaje en rojo.'))
+        elif cod == 'R6':
+            bloque.append(P('<i>Evidencia:</i> historial de commits de la rama del proyecto y documento '
+                            '08-declaracion-uso-ia.md, que registra las herramientas de IA usadas y qué hizo el equipo.'))
+        s += bloque
+    s += [H1('7. Plan de seguimiento'),
+          tabla(['Riesgo', 'Acción', 'Momento'], [
+              ['R1', 'Repetir en la sustentación el ejemplo de marcar una respuesta como verificada y explicar por qué.', 'Sustentación'],
+              ['R3, R8', 'Ejecutar git grep de claves y dotnet list package --vulnerable / --deprecated.', 'Antes de cada entrega'],
+              ['R4, R11', 'Actualizar la clave de Pollinations (la guardada en el equipo de pruebas ya no es válida) para tener un proveedor alternativo funcionando.', 'Antes de la entrega'],
+              ['R10', 'Revisar errores.log después de las pruebas en Android y en la demostración.', 'Después de cada prueba'],
+              ['R12', 'Dejar el tiempo máximo en 120 s por defecto.', 'Antes de la entrega'],
+          ], [2.4, 11, 3.6]),
+          H1('8. Conclusiones'),
+          *lista(['Los seis riesgos que exige la guía tienen un control implementado, ubicado en el código y verificado con evidencia.',
+                  'Las pruebas automatizadas revelaron tres riesgos que no estaban en la matriz original (R10–R12). El más grave, el '
+                  'cierre inesperado de la aplicación, quedó corregido y verificado.',
+                  'El riesgo residual más alto es R1 (respuesta incorrecta de la IA). No se puede eliminar desde la aplicación, por lo '
+                  'que el diseño insiste en la verificación humana: avisos, marca de verificada y aviso al compartir.',
+                  'La dependencia de proveedores externos (R4, R11, R12) es el principal riesgo operativo para la demostración: conviene '
+                  'tener dos proveedores con clave válida y cuota disponible el día de la sustentación.'])]
+    construir('Informe-matriz-riesgos.pdf', 'Informe de la matriz de riesgos', s)
+
+
 if __name__ == '__main__':
     informe_funcional()
     informe_calidad()
     informe_seguridad()
+    informe_riesgos()
