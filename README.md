@@ -60,6 +60,7 @@ docs/            Requisitos, arquitectura, API, riesgos, pruebas, manuales y evi
 | [03 API REST](docs/03-api-rest.md) | Solicitud, respuesta y códigos HTTP |
 | [04 Matriz de riesgos](docs/04-matriz-riesgos.md) | Seguridad, privacidad y uso responsable |
 | [05 Plan de pruebas](docs/05-plan-pruebas.md) | Casos P01–P10 con evidencias |
+| [Informes de pruebas (PDF)](docs/informes/) | Funcionales, de calidad y de seguridad y vulnerabilidades, con capturas. Se regeneran con `python docs/informes/generar_informes.py` |
 | [06 Manual de usuario](docs/06-manual-usuario.md) | Uso de cada pantalla |
 | [07 Manual técnico](docs/07-manual-tecnico.md) | Instalación, configuración y mantenimiento |
 | [08 Declaración de uso de IA](docs/08-declaracion-uso-ia.md) | Herramientas de IA usadas en el desarrollo |
