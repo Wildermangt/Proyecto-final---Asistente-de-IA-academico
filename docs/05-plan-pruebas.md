@@ -5,7 +5,57 @@
 **Fechas:** 15 y 16 de octubre de 2026.
 **Ejecución:** la app se manejó con UI Automation de Windows (un `AutomationId` en cada control) y se tomó una captura en cada paso. En todas las capturas la clave está tapada. Las capturas están en [`evidencias/`](evidencias/) y el índice paso a paso en [`evidencias/README.md`](evidencias/README.md).
 
-## Casos obligatorios P01–P10
+## Ejecución 2: interfaz rediseñada (16/10/2026)
+
+Se repitieron todas las pruebas sobre la versión con el rediseño de interfaz (rama `feat/rediseno-interfaz`), con UI Automation de Windows y una captura en cada paso. Antes de empezar se respaldaron los datos de la app (historial, preferencias y clave cifrada) y al terminar se restauraron. Índice de capturas: [`evidencias/v2/`](evidencias/v2/README.md).
+
+**Condiciones:** Google Gemini (`gemini-3.8-flash`). Durante la sesión, Gemini tardó más de 60 s en algunas respuestas largas, por lo que el tiempo máximo se subió a **120 s** (es configurable; P05 sigue probando el tiempo agotado con 1 s). El plan gratuito de Gemini limitó las solicitudes por minuto y, al final del día, agotó la cuota diaria (error 429).
+
+| Caso | Resultado obtenido | Estado | Evidencia |
+|---|---|---|---|
+| P01 | Burbuja "Pensando la respuesta…" con Cancelar visible. Luego "Respuesta recibida. Verifique la información…" y la respuesta con títulos, negritas, viñetas y código. | ✅ | [P01a](evidencias/v2/P01a-consultando.png) · [P01b](evidencias/v2/P01b-respuesta-recibida.png) · [P01c](evidencias/v2/P01c-respuesta-con-formato.png) · [P01d](evidencias/v2/P01d-acciones-de-la-respuesta.png) |
+| P02 | "Escriba una consulta antes de enviar." / "La consulta es demasiado corta (mínimo 5 caracteres)." Sin solicitud HTTP. | ✅ | [P02a](evidencias/v2/P02a-prompt-vacio.png) · [P02b](evidencias/v2/P02b-prompt-muy-corto.png) |
+| P03 | Con un proxy inexistente solo para el proceso de la app: "No fue posible contactar el servicio. Verifique su conexión." La app siguió abierta y el historial disponible. Además, un corte real de la Wi-Fi durante la sesión mostró "Sin conexión a internet. Revise su red e intente de nuevo." | ✅ | [P03a](evidencias/v2/P03a-sin-conexion-mensaje.png) · [P03b](evidencias/v2/P03b-app-sigue-funcionando-sin-red.png) |
+| P04 | Clave falsa `sk_clave_invalida_de_prueba_0000`: se ve como puntos al escribir y como `••••0000` guardada. Probar conexión y consultar devuelven "Error 401: la clave no es válida…". | ✅ | [P04a](evidencias/v2/P04a-clave-oculta-al-escribir.png) · [P04b](evidencias/v2/P04b-clave-guardada-enmascarada.png) · [P04c](evidencias/v2/P04c-probar-conexion-401.png) · [P04d](evidencias/v2/P04d-consulta-clave-invalida.png) |
+| P05 | Con 1 s: "Tiempo de espera agotado (1 s). Puede reintentar." y el texto vuelve al editor. El reintento exitoso quedó **pendiente**: Gemini respondió 429 (cuota diaria) y la clave guardada para Pollinations ya no es válida (401). | ⚠️ parcial | [P05a](evidencias/v2/P05a-tiempo-espera-1-segundo.png) · [P05b](evidencias/v2/P05b-tiempo-agotado.png) · [P05c pendiente](evidencias/v2/P05c-pendiente-sin-cuota-401.png) |
+| P06 | Cancelar aparece en lugar de Consultar durante la carga. Después: "Consulta cancelada por el usuario. Puede enviarla de nuevo.", el texto vuelve al editor y la interfaz responde. | ✅ | [P06a](evidencias/v2/P06a-consultando-cancelar-visible.png) · [P06b](evidencias/v2/P06b-consulta-cancelada.png) · [P06c](evidencias/v2/P06c-interfaz-sigue-disponible.png) |
+| P07 | "Conversación guardada en el historial (registro #6)". El botón pasa a "Guardada" y se deshabilita. Aparece en Historial y en la tabla `ConversationRecord`. | ✅ | [P07a](evidencias/v2/P07a-conversacion-guardada.png) · [P07b](evidencias/v2/P07b-aparece-en-historial.png) · [P07c](evidencias/v2/P07c-registro-en-sqlite.png) |
+| P08 | Diálogo "Eliminar conversación" con Eliminar/Cancelar. La lista pasa de 3 a 2 conversaciones. | ✅ | [P08a](evidencias/v2/P08a-historial-antes.png) · [P08b](evidencias/v2/P08b-confirmacion-eliminar.png) · [P08c](evidencias/v2/P08c-historial-despues.png) |
+| P09 | Proceso cerrado y abierto de nuevo: "3 conversaciones guardadas · 1 verificada" y la lista completa. | ✅ | [P09a](evidencias/v2/P09a-reinicio-inicio.png) · [P09b](evidencias/v2/P09b-historial-persiste.png) |
+| P10 | 400×800: todos los controles de Consultar y las acciones del Detalle visibles; la conversación con respuesta se lee completa. | ✅ | [P10a](evidencias/v2/P10a-pantalla-pequena-inicio.png) · [P10b](evidencias/v2/P10b-pantalla-pequena-consultar-validacion.png) · [con respuesta](evidencias/v2/R-movil-2-consultar.png) · [P10c](evidencias/v2/P10c-pantalla-pequena-historial.png) · [P10d](evidencias/v2/P10d-pantalla-pequena-configuracion.png) · [P10f](evidencias/v2/P10f-pantalla-pequena-detalle.png) |
+
+**Resultado: 9 de 10 casos aprobados y P05 aprobado de forma parcial** (falta repetir el reintento exitoso con cuota disponible).
+
+| Caso | Descripción | Resultado | Evidencia |
+|---|---|---|---|
+| C01 | Copiar respuesta en Consultar | "Respuesta copiada al portapapeles." El portapapeles recibió el texto completo sin símbolos Markdown. | [C01](evidencias/v2/C01-copiar-respuesta.png) |
+| C02 | Compartir respuesta | Se abre la ventana Compartir de Windows (los contactos están difuminados en la captura). | [C02](evidencias/v2/C02-compartir-ventana-sistema.png) |
+| C03 | Copiar desde el detalle | "Respuesta copiada al portapapeles." | [C03](evidencias/v2/11d-detalle-copiar.png) |
+| A01–A03 | Crear, editar y eliminar una plantilla | OK | [08a](evidencias/v2/08a-plantillas-lista.png) … [08g](evidencias/v2/08g-plantilla-eliminada.png) |
+| A04 | Eliminar la clave con confirmación | "No hay clave configurada para Pollinations" | [09a](evidencias/v2/09a-eliminar-clave-confirmacion.png) · [09b](evidencias/v2/09b-clave-eliminada.png) |
+| A09 | Probar conexión | Con Gemini: "Conexión exitosa con Google Gemini (gemini-3.8-flash)" en una prueba previa del mismo día, sin captura. Con Pollinations: 401 porque la clave guardada para ese proveedor ya no es válida. **Pendiente:** repetir la captura con cuota disponible. | [A09 Pollinations](evidencias/v2/A09-probar-conexion-pollinations-401.png) |
+| A10 | Marcar como verificada (UpdateAsync) | "⚠ Sin verificar…" → "✔ Verificada…" (aviso en verde) y "Verificada con fuentes" en el historial | [11a](evidencias/v2/11a-detalle-sin-verificar.png) · [11b](evidencias/v2/11b-detalle-marcada-verificada.png) · [11c](evidencias/v2/11c-historial-verificada.png) |
+| A11 | Búsqueda y filtro | "REST": 2 · "Moore": 0 · Estudio: 0 | [12a](evidencias/v2/12a-historial-busqueda-encontrada.png) · [12b](evidencias/v2/12b-historial-filtro-categoria.png) · [12c](evidencias/v2/12c-historial-busqueda-sin-resultados.png) |
+| A12 | Responsive 400, 820 y 1400 px | Sin recortes ni solapamientos | [serie R](evidencias/v2/README.md#diseño-responsive-a12) |
+| F17 | Tema oscuro | Estado de error en rojo legible y avisos con variante oscura | [serie D](evidencias/v2/README.md#tema-oscuro-f17) |
+| Estrés | Tres consultas largas seguidas con la corrección F18 | La app siguió abierta en las tres; `errores.log` vacío | — |
+
+### Calidad y seguridad
+
+| Caso | Verificación | Resultado | Evidencia |
+|---|---|---|---|
+| Q01 | `dotnet build -f net10.0-windows10.0.19041.0` | 0 errores, 0 advertencias | [Q01](evidencias/v2/Q01-compilacion-windows.png) |
+| Q02 | `dotnet build -f net10.0-android` | 0 errores (las advertencias XA del SQLite nativo aparecen solo en compilación limpia) | [Q02](evidencias/v2/Q02-compilacion-android.png) |
+| S01 | `dotnet list package --vulnerable --include-transitive` | Ningún paquete vulnerable | [S01](evidencias/v2/S01-paquetes-vulnerables.png) |
+| S02 | `dotnet list package --deprecated` | Ningún paquete obsoleto | [S02](evidencias/v2/S02-paquetes-obsoletos.png) |
+| S03 | `git grep` de patrones de claves (`sk_`, `pk_`, `AIza`, `Bearer`) | Ninguna clave real | [S03](evidencias/v2/S03-claves-en-el-repositorio.png) |
+| S04 | `git ls-files` + `git check-ignore` | `bin/` y `obj/` excluidos | [S04](evidencias/v2/S04-bin-obj-fuera-de-git.png) |
+| S05 | URL de servicios | Solo HTTPS | [S05](evidencias/v2/S05-solo-https.png) |
+| S06 | SecureStorage, `IsPassword`, registros | Clave cifrada, campo oculto y nunca escrita en consola | [S06](evidencias/v2/S06-clave-protegida.png) |
+
+## Ejecución 1: primera versión (15 y 16/10/2026)
+
+### Casos obligatorios P01–P10
 
 | Caso | Condición | Pasos | Resultado esperado | Resultado obtenido | Estado | Evidencia |
 |---|---|---|---|---|---|---|
@@ -22,7 +72,7 @@
 
 **Resultado: 10 de 10 casos aprobados.** P10 se aprobó después de corregir los fallos que encontró.
 
-## Pruebas adicionales
+### Pruebas adicionales
 
 | Caso | Descripción | Resultado | Evidencia |
 |---|---|---|---|
@@ -58,3 +108,5 @@
 | F15 | Los mensajes de estado largos se cortaban en Configuración | A08 | `HorizontalStackLayout` da ancho infinito a la etiqueta | `Grid` con columna `*` |
 | F16 | Las respuestas perdían títulos, negritas y listas al limpiarse el Markdown | Revisión de interfaz | `PlainText` quitaba el formato antes de mostrar | El Markdown se conserva y un conversor lo muestra con formato; `PlainText` queda para copiar, compartir y vistas previas |
 | F17 | En tema oscuro el mensaje de estado (#404040) casi no se leía y el aviso amarillo no cambiaba de color | Revisión de interfaz | Colores fijos sin variante oscura | `AppThemeBinding` en el estilo `StatusLabel` y en `WarningCard`; el rojo de error se activa con `DataTrigger` |
+| F18 | **La app se cerraba sola** al recibir algunas respuestas largas (rediseño) | P01 de la ejecución 2 | `OutOfMemoryException` en `FormattedStringExtensions.RecalculateSpanPositions` de MAUI para Windows: los Spans que contenían solo `"\n"` medían 0 de alto y el cálculo de líneas entraba en un bucle infinito. Se diagnosticó con el registro de eventos de Windows y un `errores.log` de excepciones no controladas | Control `MarkdownView`: una etiqueta por párrafo y ningún Span con saltos de línea. La conversación pasó de `CollectionView` a `ScrollView` + `BindableLayout`. Tres consultas largas seguidas sin cierres |
+| F19 | Algunas negritas se veían como `*API REST*` | P01 de la ejecución 2 | La cursiva (`*x*`) se quitaba antes de separar las negritas (`**x**`) | Primero se separan las negritas (admitiendo cursiva adentro) y luego se quita la cursiva; verificado sin asteriscos sobrantes en todas las respuestas guardadas |

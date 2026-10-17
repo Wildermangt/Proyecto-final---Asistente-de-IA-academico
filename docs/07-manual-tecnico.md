@@ -67,6 +67,10 @@ Como el formato es compatible con OpenAI Chat Completions:
 2. Ajuste `DefaultModel` y la lista de respaldo en `AiService.GetModelsAsync`.
 3. Si el proveedor usa otro esquema de autenticación, cambie el encabezado en `AiService.SendChatAsync`.
 
+## Registro de errores (Windows)
+
+`Platforms/Windows/App.xaml.cs` escribe las excepciones no controladas en `errores.log` (carpeta `FileSystem.AppDataDirectory`; en Windows sin empaquetar: `%LOCALAPPDATA%\\User Name\\co.edu.usb.asistenteia\\Data`). Solo guarda la traza del error, nunca la clave ni el contenido de las consultas. Con este registro se encontró el fallo F18.
+
 ## Pruebas automatizadas de interfaz
 
 Cada control relevante tiene un `AutomationId` (por ejemplo `ChatPromptEditor`, `ChatAskButton`, `SettingsKeyEntry`). Con esos identificadores se puede manejar la app con UI Automation de Windows (o Appium / WinAppDriver) para repetir las pruebas P01–P10.

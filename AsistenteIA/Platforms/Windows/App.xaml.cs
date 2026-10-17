@@ -17,6 +17,23 @@ public partial class App : MauiWinUIApplication
 	public App()
 	{
 		this.InitializeComponent();
+
+		// Registro local de errores no controlados (diagnóstico). No incluye la clave ni el contenido de las consultas.
+		UnhandledException += (_, e) => LogCrash("UI", e.Exception);
+		AppDomain.CurrentDomain.UnhandledException += (_, e) => LogCrash("AppDomain", e.ExceptionObject as Exception);
+	}
+
+	private static void LogCrash(string source, Exception? ex)
+	{
+		try
+		{
+			string path = Path.Combine(FileSystem.AppDataDirectory, "errores.log");
+			File.AppendAllText(path, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {source}: {ex}{Environment.NewLine}{Environment.NewLine}");
+		}
+		catch
+		{
+			// El registro nunca debe provocar otro error.
+		}
 	}
 
 	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();

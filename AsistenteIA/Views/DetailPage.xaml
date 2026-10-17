@@ -4,6 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:AsistenteIA.ViewModels"
              xmlns:fx="clr-namespace:AsistenteIA.Behaviors"
+             xmlns:controls="clr-namespace:AsistenteIA.Controls"
              x:DataType="vm:DetailViewModel"
              Title="Detalle">
     <ScrollView>
@@ -35,8 +36,7 @@
                         <Label Text="&#xe65f;" Style="{StaticResource Icon}" FontSize="18" />
                         <Label Text="Respuesta" Style="{StaticResource SectionTitle}" VerticalOptions="Center" />
                     </HorizontalStackLayout>
-                    <Label FormattedText="{Binding Record.Answer, Converter={StaticResource Markdown}}"
-                           LineBreakMode="WordWrap" LineHeight="1.25" AutomationId="DetailAnswer" />
+                    <controls:MarkdownView Markdown="{Binding Record.Answer}" AutomationId="DetailAnswer" />
                 </VerticalStackLayout>
             </Border>
 

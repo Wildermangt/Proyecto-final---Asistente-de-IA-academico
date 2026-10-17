@@ -145,7 +145,7 @@ classDiagram
 2. **ViewModel.** `ChatViewModel.AskAsync` valida, aplica la plantilla, agrega un `ChatExchangeViewModel` pendiente a `Exchanges` (burbuja de la pregunta), crea un `CancellationTokenSource` y pone `IsBusy = true`.
 3. **REST.** `AiService.SendChatAsync` envía el POST con Bearer y el JSON.
 4. **JSON.** `ReadFromJsonAsync<ChatResponse>` devuelve `choices[0].message.content`. Si hay error HTTP, se lanza `AiServiceException`.
-5. **Vista.** `exchange.Answer` y `StatusMessage` cambian y el binding refresca la burbuja; `MarkdownToFormattedStringConverter` muestra el formato.
+5. **Vista.** `exchange.Answer` y `StatusMessage` cambian y el binding refresca la burbuja; `MarkdownView` muestra el formato.
 6. **SQLite.** El botón Guardar de la respuesta ejecuta `SaveCommand` con ese intercambio, que crea un `ConversationRecord` y llama a `DatabaseService.SaveAsync` (`InsertAsync`).
 
 ### Decisiones técnicas
@@ -158,7 +158,7 @@ classDiagram
 | Errores tipados (`AiErrorKind`) | Mensajes claros por cada caso sin exponer detalles técnicos ni la clave. |
 | Proveedor seleccionable, modelo configurable y lista dinámica | Reduce la dependencia del proveedor. Se agregó Google Gemini cuando el equipo obtuvo una clave de Google (F5). |
 | Reintento automático ante 503/429 | En las pruebas, Gemini respondió 503 por saturación con frecuencia. Dos reintentos con espera creciente resuelven la mayoría sin intervención (F9). |
-| Markdown interpretado en la vista, no en el prompt | Pedirle al modelo "sin Markdown" hizo que omitiera las tildes (F8). La respuesta se guarda tal como llega y `MarkdownToFormattedStringConverter` la muestra con títulos, negritas y viñetas (F16). `PlainText` quita `#`, `**`, `---` para copiar, compartir y las vistas previas. |
+| Markdown interpretado en la vista, no en el prompt | Pedirle al modelo "sin Markdown" hizo que omitiera las tildes (F8). La respuesta se guarda tal como llega y el control `Controls/MarkdownView` la muestra con títulos, negritas, viñetas y bloques de código, una etiqueta por párrafo (F16, F18). `PlainText` quita `#`, `**`, `---` para copiar, compartir y las vistas previas. |
 | Identidad visual propia | Paleta verde azulado con contraste WCAG AA verificado en tema claro y oscuro, fuente Inter, íconos Material Icons Round (fuentes con licencia OFL / Apache 2.0), ícono y splash propios. Los colores de estado usan `AppThemeBinding` + `DataTrigger` sobre `IsError` (F17). |
 | Consulta en formato de conversación | `ChatPage` muestra cada consulta como burbuja del usuario y la respuesta como burbuja de la IA (`ChatExchangeViewModel`). Cada respuesta tiene Copiar, Compartir y Guardar; `IClipboard` e `IShare` se inyectan desde `MauiProgram`. |
 | Animaciones como propiedades adjuntas (`Behaviors/Animations.cs`) | Entrada de burbujas y tarjetas, efecto al presionar botones y tarjetas, pulso de "Pensando la respuesta…", realce del mensaje de estado y sacudida ante errores. Son solo de la vista: no tocan los ViewModels. `MotionPreferences` las omite si el usuario desactivó las animaciones en Windows o Android (accesibilidad). |

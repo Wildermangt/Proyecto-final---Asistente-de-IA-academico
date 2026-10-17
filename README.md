@@ -44,7 +44,8 @@ AsistenteIA/
 ├─ Services/     AiService, ApiKeyService, SettingsService, DatabaseService, DialogService
 ├─ ViewModels/   Home, Chat (+ ChatExchange), History, Detail, Settings, Templates
 ├─ Views/        HomePage, ChatPage, HistoryPage, DetailPage, SettingsPage, TemplatesPage
-├─ Converters/   Conversores de enlace de datos (bool invertido, Markdown con formato y texto plano)
+├─ Converters/   Conversores de enlace de datos (bool invertido y Markdown a texto plano)
+├─ Controls/     MarkdownView: respuesta con formato, una etiqueta por párrafo
 ├─ Behaviors/    Animaciones de la interfaz (propiedades adjuntas) y preferencia de movimiento del sistema
 └─ Resources/    Colors.xaml, Styles.xaml, fuentes (Inter, Material Icons Round), ícono y splash
 docs/            Requisitos, arquitectura, API, riesgos, pruebas, manuales y evidencias

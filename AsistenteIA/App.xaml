@@ -11,7 +11,6 @@
             </ResourceDictionary.MergedDictionaries>
 
             <conv:InvertedBoolConverter x:Key="InvertedBool" />
-            <conv:MarkdownToFormattedStringConverter x:Key="Markdown" />
             <conv:MarkdownToPlainTextConverter x:Key="PlainText" />
         </ResourceDictionary>
     </Application.Resources>

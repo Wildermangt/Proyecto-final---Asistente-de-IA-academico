@@ -2,6 +2,8 @@
 
 Capturas tomadas automáticamente de la app en ejecución (Windows 11, 15 y 16 de octubre de 2026). Solo se captura la ventana de la app, y la clave de la API aparece **tapada** ("Clave configurada (oculta en la evidencia)"). La única clave visible es la falsa de la prueba P04 (`••••0000`).
 
+> **Versión actual (interfaz rediseñada):** ver [`v2/`](v2/README.md). Esta página conserva las capturas de la primera versión.
+
 Resultados detallados: [05-plan-pruebas.md](../05-plan-pruebas.md).
 
 ## Fase 1: entorno y proyecto (Evidencia 1)

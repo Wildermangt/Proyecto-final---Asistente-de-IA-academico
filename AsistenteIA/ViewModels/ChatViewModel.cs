@@ -40,6 +40,7 @@ public partial class ChatViewModel : ObservableObject
     // Intercambios de la sesión actual (pregunta + respuesta), en orden de envío.
     public ObservableCollection<ChatExchangeViewModel> Exchanges { get; } = [];
 
+    public bool HasExchanges => Exchanges.Count > 0;
     public bool IsNotBusy => !IsBusy;
     public string CharCountText => $"{Prompt?.Trim().Length ?? 0} / {AiService.MaxPromptLength}";
 
@@ -52,6 +53,7 @@ public partial class ChatViewModel : ObservableObject
         _dialogs = dialogs;
         _clipboard = clipboard;
         _share = share;
+        Exchanges.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasExchanges));
     }
 
     // Se ejecuta al aparecer la página: recarga plantillas (pueden haberse editado) y el modelo actual.

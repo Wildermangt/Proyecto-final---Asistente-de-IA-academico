@@ -5,6 +5,7 @@
              xmlns:vm="clr-namespace:AsistenteIA.ViewModels"
              xmlns:models="clr-namespace:AsistenteIA.Models"
              xmlns:fx="clr-namespace:AsistenteIA.Behaviors"
+             xmlns:controls="clr-namespace:AsistenteIA.Controls"
              x:DataType="vm:ChatViewModel"
              x:Name="Page"
              Title="Consultar IA">
@@ -46,23 +47,24 @@
             </Button>
         </FlexLayout>
 
-        <!-- Conversación de la sesión -->
-        <CollectionView x:Name="ExchangesList" Grid.Row="1" ItemsSource="{Binding Exchanges}"
-                        SelectionMode="None" AutomationId="ChatExchanges">
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="14" />
-            </CollectionView.ItemsLayout>
-
-            <CollectionView.EmptyView>
-                <VerticalStackLayout Padding="24,40" Spacing="10" VerticalOptions="Center" fx:Animations.Entrance="Up">
+        <!-- Mensaje inicial cuando la sesión no tiene consultas -->
+        <VerticalStackLayout Grid.Row="1" Padding="24,40" Spacing="10" VerticalOptions="Center"
+                             IsVisible="{Binding HasExchanges, Converter={StaticResource InvertedBool}}"
+                             fx:Animations.Entrance="Up">
                     <Label Text="&#xe65f;" Style="{StaticResource Icon}" FontSize="44" HorizontalOptions="Center" />
                     <Label Text="¿Qué quiere aprender hoy?" Style="{StaticResource SectionTitle}" HorizontalOptions="Center" />
                     <Label Style="{StaticResource Caption}" HorizontalTextAlignment="Center" LineBreakMode="WordWrap"
                            Text="Elija una plantilla, escriba su consulta y pulse Consultar. Puede copiar, compartir o guardar cada respuesta en el historial." />
-                </VerticalStackLayout>
-            </CollectionView.EmptyView>
+        </VerticalStackLayout>
 
-            <CollectionView.ItemTemplate>
+        <!-- Conversación de la sesión. ScrollView + BindableLayout (sin virtualización): una sesión tiene pocos
+             intercambios y cada respuesta cambia mucho de altura al llegar; con CollectionView (ItemsRepeater)
+             ese cambio de altura durante el desplazamiento cerraba la app en Windows (F18). -->
+        <ScrollView x:Name="ExchangesScroll" Grid.Row="1" AutomationId="ChatExchanges"
+                    IsVisible="{Binding HasExchanges}">
+            <VerticalStackLayout x:Name="ExchangesLayout" Spacing="14"
+                                 BindableLayout.ItemsSource="{Binding Exchanges}">
+                <BindableLayout.ItemTemplate>
                 <DataTemplate x:DataType="vm:ChatExchangeViewModel">
                     <VerticalStackLayout Spacing="8" Padding="0,4">
 
@@ -92,10 +94,8 @@
                                 </HorizontalStackLayout>
 
                                 <!-- Respuesta con formato básico (títulos, negritas, viñetas) -->
-                                <Label FormattedText="{Binding Answer, Converter={StaticResource Markdown}}"
-                                       LineBreakMode="WordWrap" LineHeight="1.25"
-                                       IsVisible="{Binding HasAnswer}" AutomationId="ChatAnswerLabel"
-                                       fx:Animations.Entrance="Fade" />
+                                <controls:MarkdownView Markdown="{Binding Answer}"
+                                                       IsVisible="{Binding HasAnswer}" AutomationId="ChatAnswerLabel" />
 
                                 <Border Style="{StaticResource WarningCard}" Padding="10,8" IsVisible="{Binding HasAnswer}">
                                     <Label Style="{StaticResource WarningLabel}" FontSize="12"
@@ -139,8 +139,9 @@
                         </Border>
                     </VerticalStackLayout>
                 </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </ScrollView>
 
         <!-- Estado (RF04): carga, respuesta, error y sin conexión -->
         <Label Grid.Row="2" Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}" AutomationId="ChatStatusLabel"
