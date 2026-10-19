@@ -34,7 +34,7 @@ dotnet publish AsistenteIA/AsistenteIA.csproj -f net10.0-windows10.0.19041.0 -c 
 dotnet publish AsistenteIA/AsistenteIA.csproj -f net10.0-android -c Release -p:AndroidPackageFormat=apk -o publish/android
 ```
 
-El ejecutable queda en `publish/windows/AsistenteIA.exe` y el APK en `publish/android/co.edu.usb.asistenteia-Signed.apk`. La versión 1.0 de ambos se entrega aparte (`AsistenteIA-1.0-windows-x64.zip` y `AsistenteIA-1.0-android.apk`) porque `publish/` no se sube al repositorio.
+El ejecutable queda en `publish/windows/AsistenteIA.exe` y el APK en `publish/android/co.edu.usb.asistenteia-Signed.apk`. `publish/` no se sube al repositorio: la versión 1.0 de ambos (`AsistenteIA-1.0-windows-x64.zip` y `AsistenteIA-1.0-android.apk`) se descarga desde el [release v1.0](https://github.com/Wildermangt/Proyecto-final---Asistente-de-IA-academico/releases/tag/v1.0).
 
 En Visual Studio: abrir `AsistenteIA.slnx`, elegir **Windows Machine** o un emulador Android y pulsar Ejecutar.
 
