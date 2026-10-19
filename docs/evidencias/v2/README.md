@@ -29,7 +29,7 @@ Resultados y análisis: [05-plan-pruebas.md](../../05-plan-pruebas.md#ejecución
 | P04 | Consulta con clave inválida → 401 | ![](P04d-consulta-clave-invalida.png) |
 | P05 | Tiempo máximo en 1 s | ![](P05a-tiempo-espera-1-segundo.png) |
 | P05 | Tiempo agotado; el texto vuelve al editor | ![](P05b-tiempo-agotado.png) |
-| P05 | Reintento: **pendiente**, sin cuota del proveedor ese día (ver el plan) | ![](P05c-pendiente-sin-cuota-401.png) |
+| P05 | Reintento exitoso con 60 s (19/10/2026) | ![](P05c-reintento-exitoso.png) |
 | P06 | Consultando, Cancelar visible | ![](P06a-consultando-cancelar-visible.png) |
 | P06 | Consulta cancelada; el texto vuelve al editor | ![](P06b-consulta-cancelada.png) |
 | P06 | La interfaz sigue disponible | ![](P06c-interfaz-sigue-disponible.png) |
@@ -63,6 +63,7 @@ Resultados y análisis: [05-plan-pruebas.md](../../05-plan-pruebas.md#ejecución
 | A01–A03 | Eliminada | ![](08g-plantilla-eliminada.png) |
 | A04 | Eliminar clave: confirmación | ![](09a-eliminar-clave-confirmacion.png) |
 | A04 | Clave eliminada | ![](09b-clave-eliminada.png) |
+| A09 | Probar conexión exitosa con Google Gemini (19/10/2026) | ![](A09-probar-conexion-exitosa.png) |
 | A09 | Probar conexión con Pollinations: 401 (la clave guardada para ese proveedor ya no es válida) | ![](A09-probar-conexion-pollinations-401.png) |
 | A10 | Detalle sin verificar | ![](11a-detalle-sin-verificar.png) |
 | A10 | Marcada como verificada (UpdateAsync, aviso en verde) | ![](11b-detalle-marcada-verificada.png) |

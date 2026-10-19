@@ -191,15 +191,15 @@ def informe_funcional():
               ['P02', 'Prompt vacío o muy corto', 'Mensaje de validación; no se envía la solicitud', estado('Aprobado')],
               ['P03', 'Sin conexión', 'Mensaje comprensible; la app no se cierra', estado('Aprobado')],
               ['P04', 'Clave inválida', 'Error 401 sin mostrar la clave', estado('Aprobado')],
-              ['P05', 'Tiempo agotado', 'Mensaje de tiempo agotado; reintento exitoso pendiente por cuota', estado('Parcial')],
+              ['P05', 'Tiempo agotado', 'Mensaje de tiempo agotado y reintento exitoso con 60 s', estado('Aprobado')],
               ['P06', 'Cancelar solicitud', 'Cancelada sin bloquear la interfaz', estado('Aprobado')],
               ['P07', 'Guardar conversación', 'Aparece en el historial y en SQLite', estado('Aprobado')],
               ['P08', 'Eliminar conversación', 'Confirmación y lista actualizada (3 → 2)', estado('Aprobado')],
               ['P09', 'Reiniciar aplicación', 'El historial permanece', estado('Aprobado')],
               ['P10', 'Pantalla pequeña (400×800)', 'Controles accesibles en todas las pantallas', estado('Aprobado')],
           ], [1.4, 4.6, 8.4, 2.6]), Spacer(1, 6),
-          P('<b>Resultado global:</b> 9 de 10 casos aprobados y P05 aprobado de forma parcial. Las pruebas adicionales '
-            'C01–C03, A01–A04, A10 y A11 se aprobaron; A09 queda pendiente de repetir con cuota disponible.'),
+          P('<b>Resultado global:</b> 10 de 10 casos aprobados. Las pruebas adicionales C01–C03, A01–A04 y A09–A11 '
+            'también se aprobaron.'),
           PageBreak(), H1('6. Ejecución detallada de los casos obligatorios')]
 
     s += caso('P01', 'Prompt válido y clave válida', 'Clave válida de Gemini; plantilla "Explicar concepto", categoría Programación.',
@@ -231,12 +231,13 @@ def informe_funcional():
                figs_lado([('P04c-probar-conexion-401.png', 'P04: Probar conexión → 401.'),
                           ('P04d-consulta-clave-invalida.png', 'P04: consulta → 401.')])])
     s += caso('P05', 'Tiempo agotado', 'Tiempo máximo de espera configurado en 1 segundo.',
-              'Consultar un ensayo largo; después volver a 120 s y reintentar.', 'La espera finaliza y el usuario puede reintentar.',
-              '"Tiempo de espera agotado (1 s). Puede reintentar." y el texto vuelve al editor para reintentar. El reintento '
-              'exitoso no se pudo capturar: Gemini respondió 429 (cuota diaria del plan gratuito agotada) y la clave guardada '
-              'para Pollinations ya no es válida (401).', 'Parcial',
+              'Consultar un ensayo largo; después volver a 60 s y reintentar.', 'La espera finaliza y el usuario puede reintentar.',
+              '"Tiempo de espera agotado (1 s). Puede reintentar." y el texto vuelve al editor para reintentar. El 16/10 el '
+              'reintento no se pudo completar porque Gemini agotó la cuota diaria (429); se repitió el 19/10 con cuota '
+              'disponible y, con 60 s, devolvió "Respuesta recibida…" y el ensayo completo.', 'Aprobado',
               [figs_lado([('P05a-tiempo-espera-1-segundo.png', 'P05: tiempo máximo de 1 s.'),
-                          ('P05b-tiempo-agotado.png', 'P05: tiempo agotado; el texto vuelve al editor.')])])
+                          ('P05b-tiempo-agotado.png', 'P05: tiempo agotado; el texto vuelve al editor.')]),
+               fig('P05c-reintento-exitoso.png', 'P05: reintento exitoso con 60 s (19/10/2026).', alto_max=9 * cm)])
     s += caso('P06', 'Cancelar solicitud', 'Consulta de un ensayo de 1500 palabras.',
               'Pulsar Consultar y, durante la carga, Cancelar; luego escribir otra consulta.', 'Se cancela sin bloquear la interfaz.',
               'Cancelar aparece en lugar de Consultar mientras se espera. Después: "Consulta cancelada por el usuario. Puede '
@@ -276,7 +277,7 @@ def informe_funcional():
               ['C03', 'Copiar desde el detalle', '"Respuesta copiada al portapapeles."', estado('Aprobado')],
               ['A01–A03', 'Crear, editar y eliminar plantilla', 'Guardada, editada y eliminada con confirmación', estado('Aprobado')],
               ['A04', 'Eliminar la clave', 'Confirmación y "No hay clave configurada"', estado('Aprobado')],
-              ['A09', 'Probar conexión exitosa', 'Exitosa con Gemini en una prueba sin captura; pendiente repetir con captura', estado('Pendiente')],
+              ['A09', 'Probar conexión exitosa', '"Conexión exitosa con Google Gemini (gemini-3.8-flash)"', estado('Aprobado')],
               ['A10', 'Marcar como verificada (UpdateAsync)', 'Sin verificar → Verificada; se refleja en el historial', estado('Aprobado')],
               ['A11', 'Búsqueda y filtro', '"REST": 2 · "Moore": 0 · Estudio: 0', estado('Aprobado')],
           ], [1.8, 5, 7.6, 2.6]),
@@ -287,18 +288,18 @@ def informe_funcional():
                      ('08f-plantilla-confirmar-eliminar.png', 'Confirmar eliminación.')], 6 * cm),
           H2('A04. Eliminar la clave'),
           figs_lado([('09a-eliminar-clave-confirmacion.png', 'Confirmación.'), ('09b-clave-eliminada.png', 'Clave eliminada.')]),
+          H2('A09. Probar conexión'),
+          fig('A09-probar-conexion-exitosa.png', 'A09: conexión exitosa con Google Gemini (clave oculta).', alto_max=9 * cm),
           H2('A10. Detalle y verificación (actualización del CRUD)'),
           figs_lado([('11a-detalle-sin-verificar.png', 'Sin verificar.'), ('11b-detalle-marcada-verificada.png', 'Verificada.')]),
           H2('A11. Búsqueda y filtro del historial (RF06)'),
           figs_lado([('12a-historial-busqueda-encontrada.png', '"REST".'), ('12b-historial-filtro-categoria.png', 'Filtro.'),
                      ('12c-historial-busqueda-sin-resultados.png', '"Moore".')], 6 * cm),
           H1('8. Conclusiones y recomendaciones'),
-          *lista(['La aplicación cumple los requisitos funcionales RF01 a RF10 en Windows. Nueve de los diez casos obligatorios '
-                  'se aprobaron y P05 se aprobó de forma parcial.',
+          *lista(['La aplicación cumple los requisitos funcionales RF01 a RF10 en Windows. Los diez casos obligatorios se '
+                  'aprobaron.',
                   'Los estados de carga, error, cancelación y ausencia de conexión se muestran con mensajes comprensibles y la '
                   'aplicación nunca se bloqueó ni se cerró durante esta ejecución.',
-                  'Pendiente: repetir el reintento exitoso de P05 y la captura de A09 cuando haya cuota en Gemini, o actualizar la '
-                  'clave de Pollinations.',
                   'Recomendación: dejar el tiempo máximo en 120 s, porque el plan gratuito de Gemini tardó más de 60 s en '
                   'respuestas largas.'])]
     construir('Informe-pruebas-funcionales.pdf', 'Informe de pruebas funcionales', s)
