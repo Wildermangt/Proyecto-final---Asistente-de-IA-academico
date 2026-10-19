@@ -359,9 +359,9 @@ def doc_metodologia():
           P(f'El repositorio registra {len(commits)} commits. Esta es la secuencia completa:'),
           tabla(['Commit', 'Fecha', 'Autor', 'Descripción'], [[c[0], c[1], c[2], c[3]] for c in commits], [1.6, 2.7, 3.4, 9.3]),
           Spacer(1, 6),
-          nota('<b>Pendiente para la entrega:</b> la guía exige commits de todos los integrantes. Hoy todos los commits son de un '
-               'solo autor; cada integrante debe aportar sus propios commits (por ejemplo, en documentación, pruebas o mejoras) '
-               'antes de la entrega.'),
+          nota('<b>Pendiente para la entrega:</b> la guía exige commits de todos los integrantes. María Alejandra (alejandragoru) y '
+               'José Leandro (joseleandro544) ya son colaboradores del repositorio y aportan sus commits desde sus cuentas, '
+               'en las ramas feat/servicios-datos-mag y test/calidad-pruebas-jlo, mediante pull requests.'),
           H1('7. Lecciones aprendidas'),
           *lista(['Las pruebas automatizadas con capturas encontraron un fallo grave (cierre de la app, F18) que no aparecía en el uso corto.',
                   'Depender de un plan gratuito de IA afecta las pruebas: latencia mayor a 60 s y límites de cuota. Conviene tener dos proveedores con clave válida.',

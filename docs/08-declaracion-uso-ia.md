@@ -17,7 +17,7 @@
 ## Registro de prompts y decisiones
 
 - Los commits del repositorio (`git log`) documentan el avance por fases.
-- Rediseño de interfaz (rama `feat/rediseno-interfaz`): a pedido del equipo, la IA propuso e implementó la identidad visual (paleta con contraste verificado, fuentes e íconos de licencia libre, ícono y splash), la consulta en formato de conversación con Copiar/Compartir/Guardar, el formato de las respuestas y las animaciones accesibles. El equipo revisó el resultado contra la guía del proyecto y debe volver a capturar las evidencias de la nueva interfaz.
+- Rediseño de interfaz (rama `feat/rediseno-interfaz`): a pedido del equipo, la IA propuso e implementó la identidad visual (paleta con contraste verificado, fuentes e íconos de licencia libre, ícono y splash), la consulta en formato de conversación con Copiar/Compartir/Guardar, el formato de las respuestas y las animaciones accesibles. El equipo revisó el resultado contra la guía del proyecto y volvió a capturar las evidencias con la nueva interfaz ([`evidencias/v2/`](evidencias/v2/README.md)).
 - Durante el desarrollo, la IA detectó y corrigió: la vulnerabilidad en la dependencia nativa de SQLite, el estado visual deshabilitado de los botones, la accesibilidad de las etiquetas dinámicas y el layout en pantalla pequeña (ver [05-plan-pruebas.md](05-plan-pruebas.md)).
 
 ## Limitaciones reconocidas
