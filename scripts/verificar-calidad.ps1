@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
     Repite las verificaciones automaticas de calidad y seguridad del plan de pruebas
-    (Q01, Q02 y S01-S05 de docs/05-plan-pruebas.md).
+    (Q01, Q02, U01-U04 y S01-S05 de docs/05-plan-pruebas.md).
 
 .DESCRIPTION
     Ejecutar desde la raiz del repositorio, en Windows, con el SDK de .NET 10 y la carga
@@ -50,6 +50,11 @@ if ($OmitirAndroid) {
     dotnet build $proyecto -f net10.0-android | Out-Host
     Registrar 'Q02' ($LASTEXITCODE -eq 0) 'dotnet build Android: 0 errores'
 }
+
+# U01-U04: pruebas unitarias xUnit del proyecto AsistenteIA.Tests.
+Write-Host "`nU01-U04: ejecutando pruebas unitarias..."
+dotnet test AsistenteIA.Tests | Out-Host
+Registrar 'U01-U04' ($LASTEXITCODE -eq 0) 'dotnet test: todas las pruebas unitarias aprobadas'
 
 # S01 y S02: paquetes vulnerables u obsoletos. dotnet list package marca cada paquete
 # encontrado con una fila que empieza por ">", sin importar el idioma del SDK.
