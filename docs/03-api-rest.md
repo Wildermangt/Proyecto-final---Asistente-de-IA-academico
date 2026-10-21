@@ -73,6 +73,12 @@ Formato de error de Google (comprobado con una clave falsa):
 
 `AiService.ExtractErrorMessage` acepta ambos formatos (objeto o arreglo) y añade el mensaje del proveedor al error, por ejemplo: "(Proveedor: Please pass a valid API key)". Ese mensaje nunca incluye la clave.
 
+## Ejemplos de respuesta de error
+
+**Error 401 (Clave inválida o ausente):**
+```json
+{"success":false,"error":{"message":"A valid API key is required. Get one at https://enter.pollinations.ai/keys","code":"UNAUTHORIZED","timestamp":"2026-10-15T23:32:18.366Z"},"status":401}
+
 ## Reintentos
 
 Ante **503** o **429**, `SendChatAsync` reintenta hasta 2 veces, con esperas de 2 y 4 segundos, dentro del mismo tiempo máximo configurado. Si el usuario cancela, también se cancela la espera. Si los reintentos se agotan, se muestra el error con el motivo del proveedor.
