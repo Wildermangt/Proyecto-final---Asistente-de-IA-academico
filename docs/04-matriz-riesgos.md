@@ -31,3 +31,20 @@ Probabilidad e impacto: Alta (3) / Media (2) / Baja (1). **Nivel = probabilidad 
 | R6 | Medio (4) | Bajo (2) | R12 | Medio (4) | Bajo (2) |
 
 R1 sigue siendo el mayor riesgo residual: depende del modelo de IA, no de la aplicación. La app reduce su impacto con avisos, la marca de "verificada" y el aviso al compartir, pero contrastar la información es responsabilidad del estudiante.
+
+## Trazabilidad con las pruebas de calidad y seguridad
+
+Cada control de la matriz se comprueba con al menos un caso del [plan de pruebas](05-plan-pruebas.md#calidad-y-seguridad). Si uno de estos casos falla al repetirse, el riesgo asociado vuelve a su nivel inherente hasta corregirlo.
+
+| Riesgo | Casos que verifican el control | Resultado (16 y 19/10/2026) |
+|---|---|---|
+| R3 Exposición de credenciales | P04, S03, S06 | Aprobados: clave enmascarada, sin claves reales en el repositorio y cifrada en SecureStorage |
+| R7 Indisponibilidad de red o del servicio | P03, P05, P06 | Aprobados: mensaje comprensible, reintento y cancelación sin bloquear la interfaz |
+| R8 Dependencias vulnerables | S01, S02 | Aprobados: ningún paquete vulnerable ni obsoleto |
+| R9 Pérdida del historial | P08, P09 | Aprobados: eliminación con confirmación y persistencia tras reiniciar |
+| R10 Cierre inesperado de la aplicación | Q03, Q04, prueba de estrés | Aprobados después de corregir F18 (respuestas largas) y F20 (APK) |
+| R11 Límites de cuota del proveedor | A08 | Aprobado: error 429 con el mensaje del proveedor |
+| R12 Latencia alta del proveedor | P05, P06 | Aprobados: tiempo máximo configurable y botón Cancelar |
+| Calidad del producto entregado | Q01, Q02, A12, F17 | Aprobados: compilación limpia, interfaz adaptable y tema oscuro legible |
+
+Los casos Q01, Q02 y S01–S05 se repiten con `scripts/verificar-calidad.ps1` antes de cada entrega.
