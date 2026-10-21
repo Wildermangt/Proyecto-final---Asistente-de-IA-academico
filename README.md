@@ -38,6 +38,16 @@ El ejecutable queda en `publish/windows/AsistenteIA.exe` y el APK en `publish/an
 
 En Visual Studio: abrir `AsistenteIA.slnx`, elegir **Windows Machine** o un emulador Android y pulsar Ejecutar.
 
+## Pruebas unitarias
+
+El proyecto `AsistenteIA.Tests` (xUnit) prueba la lógica que no depende de MAUI: validación de la consulta, limpieza del Markdown, traducción de errores HTTP y filtro de modelos. Se ejecuta en Windows, Linux o macOS solo con el .NET SDK 10:
+
+```bash
+dotnet test AsistenteIA.Tests
+```
+
+Detalle de los casos en [docs/05-plan-pruebas.md](docs/05-plan-pruebas.md#pruebas-unitarias-automáticas-xunit).
+
 ## Configurar la clave
 
 1. Crear una clave en <https://enter.pollinations.ai/keys>.
