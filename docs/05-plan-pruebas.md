@@ -78,6 +78,23 @@ powershell -ExecutionPolicy Bypass -File scripts/verificar-calidad.ps1
 
 El script muestra un resumen por caso y termina con código 1 si alguno falla. Con `-OmitirAndroid` se salta Q02 en equipos sin el SDK de Android.
 
+### Pruebas unitarias automáticas (xUnit)
+
+Proyecto `AsistenteIA.Tests` (.NET 10, xUnit 2.9). La app es .NET MAUI y no se puede referenciar desde un proyecto de pruebas, así que las reglas de `AiService` que no dependen de MAUI se separaron en `Services/AiService.Rules.cs` (clase parcial, sin cambios de comportamiento) y el proyecto de pruebas compila ese archivo junto con `AiServiceException`, `AiProvider` y `ChatModels`.
+
+```bash
+dotnet test AsistenteIA.Tests
+```
+
+| Caso | Clase de prueba | Qué verifica | Relación con el plan | Pruebas |
+|---|---|---|---|---|
+| U01 | `ValidarConsultaTests` | Consulta vacía, corta (menos de 5 caracteres), en el límite y de más de 2000 caracteres | P02 | 11 |
+| U02 | `TextoPlanoTests` | Limpieza del Markdown al copiar y compartir: títulos, negritas, cursiva dentro de negrita, viñetas, código, separadores y saltos de línea | C01, C03, F7, F16, F19 | 15 |
+| U03 | `ErroresHttpTests` | Mensajes para 400 (incluido el arreglo JSON de Google con clave inválida), 401, 402, 403, 404, 429 y 5xx, y extracción del mensaje del proveedor | P04, A07, A08, F6 | 20 |
+| U04 | `ProveedoresYModelosTests` | Proveedor por defecto, URL solo HTTPS, modelos de texto de Pollinations y Gemini y prefijo `models/` | F5, S05, R4 | 22 |
+
+**Resultado (21/10/2026): 68 de 68 pruebas aprobadas, 0 advertencias.** Para comprobar que las pruebas detectan errores, se introdujeron dos fallos a propósito (mínimo de 4 caracteres y quitar la cursiva antes que la negrita): las pruebas fallaron y volvieron a pasar al restaurar el código.
+
 ## Ejecución 1: primera versión (15 y 16/10/2026)
 
 ### Casos obligatorios P01–P10
