@@ -24,10 +24,10 @@
 
 El código generado con IA puede contener errores. Por eso se verificó compilando (Windows y Android), ejecutando la app y documentando cada prueba con capturas. Las respuestas que genera la app también pueden ser incorrectas, por lo que la interfaz pide verificarlas con fuentes confiables.
 
-_Completar la firma y la fecha de entrega:_
+**Fecha de entrega:** 21 de octubre de 2026.
 
 | Integrante | Rol (Fase 14) | Firma |
 |---|---|---|
-| Jeferson Wilderman González Tenjo | Director de proyecto | |
+| Jeferson Wilderman González Tenjo | Director de proyecto | Jeferson Wilderman González Tenjo |
 | María Alejandra Gómez | Desarrolladora de software (servicios y datos) | |
 | José Leandro Ocampo | Desarrollador de software (calidad y pruebas) | |
