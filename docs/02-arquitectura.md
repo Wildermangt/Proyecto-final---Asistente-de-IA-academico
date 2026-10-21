@@ -71,6 +71,7 @@ Conecta el cliente con el modelo de IA mediante una API REST compatible con Open
 | `AiService.SendChatAsync` | Revisa la conectividad, lee la clave del proveedor activo, envía `POST {URL base}chat/completions` con `Authorization: Bearer` y `JsonContent`, reintenta hasta 2 veces ante 503/429 (esperas de 2 y 4 s), controla el tiempo de espera y la cancelación, y deserializa `ChatResponse` |
 | `AiService.CreateHttpErrorAsync` | Convierte los códigos HTTP (400 de clave inválida de Google, 401, 402, 404, 429, 5xx…) en `AiServiceException` con un mensaje comprensible más el motivo del proveedor (acepta errores en objeto o en arreglo JSON) |
 | `AiService.TestConnectionAsync` | Consulta breve para el botón "Probar conexión" |
+| `AiService.Rules.cs` (parte de la clase parcial) | Reglas sin dependencias de MAUI: `ValidatePrompt`, `PlainText`, `CreateHttpErrorAsync`, `ExtractErrorMessage` y el filtro de modelos. Las cubre el proyecto de pruebas `AsistenteIA.Tests` |
 | `AiService.GetModelsAsync` | `GET {URL base}models`, filtra los modelos de texto del proveedor y usa una lista local si falla |
 | `HttpClient` (singleton en `MauiProgram`) | Reutiliza conexiones. La URL completa la arma `AiService` según el proveedor |
 

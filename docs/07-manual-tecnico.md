@@ -52,6 +52,7 @@ CREATE TABLE ConversationRecord (
   Prompt TEXT, Answer TEXT, CreatedAt BIGINT,
   Category TEXT, IsVerified INTEGER, Model TEXT
 );
+CREATE INDEX ConversationRecord_CreatedAt ON ConversationRecord(CreatedAt);
 CREATE INDEX ConversationRecord_Category ON ConversationRecord(Category);
 
 CREATE TABLE PromptTemplate (
@@ -73,6 +74,24 @@ Como el formato es compatible con OpenAI Chat Completions:
 ## Registro de errores (Windows)
 
 `Platforms/Windows/App.xaml.cs` escribe las excepciones no controladas en `errores.log` (carpeta `FileSystem.AppDataDirectory`; en Windows sin empaquetar: `%LOCALAPPDATA%\\User Name\\co.edu.usb.asistenteia\\Data`). Solo guarda la traza del error, nunca la clave ni el contenido de las consultas. Con este registro se encontró el fallo F18.
+
+## Pruebas unitarias
+
+El proyecto `AsistenteIA.Tests` (xUnit, .NET 10) prueba las reglas de `AiService` que no dependen de MAUI: validación de la consulta, limpieza del Markdown, mensajes de error HTTP y filtro de modelos (68 pruebas, casos U01–U04 de [05-plan-pruebas.md](05-plan-pruebas.md#pruebas-unitarias-automáticas-xunit)). Un proyecto de pruebas no puede referenciar una app MAUI, así que esas reglas están en `Services/AiService.Rules.cs` (clase parcial) y el proyecto de pruebas compila ese archivo directamente.
+
+```bash
+dotnet test AsistenteIA.Tests
+```
+
+Si se agrega una regla nueva a `AiService` que no use MAUI, conviene ponerla en `AiService.Rules.cs` y cubrirla con una prueba.
+
+## Verificación de calidad antes de entregar
+
+`scripts/verificar-calidad.ps1` repite los casos automáticos Q01, Q02, U01–U04 y S01–S05 y termina con código 1 si alguno falla (`-OmitirAndroid` salta Q02):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verificar-calidad.ps1
+```
 
 ## Pruebas automatizadas de interfaz
 

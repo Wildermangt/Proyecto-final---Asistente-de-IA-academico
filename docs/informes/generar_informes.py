@@ -319,7 +319,8 @@ def informe_calidad():
           *lista(['Compilación para Windows y Android (Q01, Q02) y ejecución de los entregables Release: APK y ejecutable (Q03, Q04).',
                   'Diseño responsive en 400, 820 y 1400 píxeles (A12).',
                   'Tema oscuro y contraste de los mensajes de estado (F17).',
-                  'Estabilidad con respuestas largas y prueba de estrés (F18, F19).'])]
+                  'Estabilidad con respuestas largas y prueba de estrés (F18, F19).',
+                  'Pruebas unitarias automáticas de las reglas de AiService (U01–U04, xUnit).'])]
     s += entorno()
     s += [H1('5. Resultados'),
           tabla(['Caso', 'Verificación', 'Resultado', 'Estado'], [
@@ -331,13 +332,43 @@ def informe_calidad():
               ['F17', 'Tema oscuro', 'Error en rojo legible y avisos con variante oscura', estado('Aprobado')],
               ['Contraste', 'Pares de color texto/fondo', 'Todos ≥ 4,5:1 (WCAG AA) en tema claro y oscuro', estado('Aprobado')],
               ['Estrés', 'Tres consultas largas seguidas', 'La app siguió abierta; errores.log vacío', estado('Aprobado')],
+              ['U01–U04', 'dotnet test AsistenteIA.Tests (xUnit)', '68 de 68 pruebas aprobadas, 0 advertencias', estado('Aprobado')],
           ], [2.2, 5, 7.2, 2.6]),
+          H2('Criterios de aceptación'),
+          P('Un caso se aprueba solo si cumple su criterio; si no, se registra como fallo (F#), se corrige y se repite.'),
+          tabla(['Caso', 'Criterio de aceptación', 'Verificación'], [
+              ['Q01', 'Compilación para Windows con 0 errores y 0 advertencias', 'Automática'],
+              ['Q02', 'Compilación para Android con 0 errores (se aceptan las advertencias XA del SQLite nativo)', 'Automática'],
+              ['Q03', 'El APK Release abre en el emulador y muestra el resumen del historial sin cerrarse', 'Manual, con captura'],
+              ['Q04', 'El ejecutable Release autocontenido abre en un equipo sin .NET instalado y lee el historial', 'Manual, con captura'],
+              ['A12', 'En 400, 820 y 1400 px ningún control queda recortado ni solapado', 'Manual, con capturas'],
+              ['F17', 'Textos y avisos legibles en tema oscuro; contraste ≥ 4,5:1 (WCAG AA)', 'Manual, con capturas'],
+              ['Estrés', 'Tres consultas largas seguidas sin cierre y errores.log vacío', 'Manual'],
+              ['U01–U04', 'Todas las pruebas unitarias aprobadas', 'Automática'],
+              ['S01–S05', 'Sin paquetes vulnerables ni obsoletos, sin claves reales, sin bin/ ni obj/ versionados y solo URL HTTPS', 'Automática'],
+          ], [2.2, 11, 3.8]),
+          P('Los casos automáticos se repiten con un solo comando desde la raíz del repositorio: '
+            '<font name="Courier" size="8">powershell -ExecutionPolicy Bypass -File scripts/verificar-calidad.ps1</font>. '
+            'El script muestra un resumen por caso y termina con código 1 si alguno falla.'),
           H2('Q01–Q02. Compilación'),
           fig('Q01-compilacion-windows.png', 'Q01: compilación para Windows sin errores ni advertencias.', alto_max=4 * cm),
           fig('Q02-compilacion-android.png', 'Q02: compilación para Android sin errores.', alto_max=4 * cm),
           H2('Q03–Q04. Entregables ejecutables'),
           figs_lado([('Q03-apk-android-inicio.png', 'Q03: APK en el emulador Pixel 6 (Android 15).'),
                      ('Q04-ejecutable-windows-inicio.png', 'Q04: ejecutable de Windows autocontenido.')]),
+          H2('U01–U04. Pruebas unitarias (xUnit)'),
+          P('La app es .NET MAUI y no se puede referenciar desde un proyecto de pruebas, así que las reglas de AiService que no '
+            'dependen de MAUI se separaron en Services/AiService.Rules.cs (clase parcial, sin cambios de comportamiento). El '
+            'proyecto AsistenteIA.Tests (.NET 10, xUnit 2.9) compila ese archivo junto con AiServiceException, AiProvider y ChatModels.'),
+          tabla(['Caso', 'Clase de prueba', 'Qué verifica', 'Relación', 'Pruebas'], [
+              ['U01', 'ValidarConsultaTests', 'Consulta vacía, corta (menos de 5 caracteres), en el límite y de más de 2000 caracteres', 'P02', '11'],
+              ['U02', 'TextoPlanoTests', 'Limpieza del Markdown al copiar y compartir: títulos, negritas, cursiva dentro de negrita, viñetas, código, separadores y saltos de línea', 'C01, C03, F7, F16, F19', '15'],
+              ['U03', 'ErroresHttpTests', 'Mensajes para 400 (incluido el arreglo JSON de Google), 401, 402, 403, 404, 429 y 5xx, y extracción del mensaje del proveedor', 'P04, A07, A08, F6', '20'],
+              ['U04', 'ProveedoresYModelosTests', 'Proveedor por defecto, URL solo HTTPS, modelos de texto de Pollinations y Gemini y prefijo models/', 'F5, S05, R4', '22'],
+          ], [1.3, 3.6, 7.6, 3, 1.5]),
+          P('<b>Resultado (21/10/2026): 68 de 68 pruebas aprobadas, 0 advertencias.</b> Para comprobar que las pruebas detectan '
+            'errores, se introdujeron dos fallos a propósito (mínimo de 4 caracteres y quitar la cursiva antes que la negrita): '
+            'las pruebas fallaron y volvieron a pasar al restaurar el código.'),
           H2('A12. Diseño responsive'),
           P('Se capturaron Inicio, Consultar (con una respuesta en pantalla), Historial y Configuración en tres anchos. '
             'Los controles se reacomodan con FlexLayout y Grid, el contenido se limita a 1000 px en escritorio y, en móvil, '
@@ -383,6 +414,8 @@ def informe_calidad():
                   'La interfaz se adapta a móvil, tablet y escritorio y cumple contraste WCAG AA en ambos temas.',
                   'La prueba automatizada encontró un fallo grave de estabilidad (F18) que no aparecía en el uso corto; quedó '
                   'corregido y verificado. Se recomienda conservar el registro errores.log para diagnosticar fallos futuros.',
+                  'Las 68 pruebas unitarias protegen las reglas de validación, formato y errores HTTP ante cambios futuros; '
+                  'se ejecutan con dotnet test AsistenteIA.Tests o con scripts/verificar-calidad.ps1.',
                   'Recomendación: ejecutar P01–P10 en un emulador o dispositivo Android antes de la entrega del APK.'])]
     construir('Informe-pruebas-calidad.pdf', 'Informe de pruebas de calidad', s)
 
@@ -615,15 +648,29 @@ def informe_riesgos():
             bloque.append(P('<i>Evidencia:</i> historial de commits de la rama del proyecto y documento '
                             '08-declaracion-uso-ia.md, que registra las herramientas de IA usadas y qué hizo el equipo.'))
         s += bloque
-    s += [H1('7. Plan de seguimiento'),
+    s += [H1('7. Trazabilidad con las pruebas de calidad y seguridad'),
+          P('Cada control de la matriz se comprueba con al menos un caso del plan de pruebas. Si uno de estos casos falla al '
+            'repetirse, el riesgo asociado vuelve a su nivel inherente hasta corregirlo.'),
+          tabla(['Riesgo', 'Casos que verifican el control', 'Resultado (16 y 19/10/2026)'], [
+              ['R3 Exposición de credenciales', 'P04, S03, S06', 'Aprobados: clave enmascarada, sin claves reales en el repositorio y cifrada en SecureStorage'],
+              ['R7 Indisponibilidad de red o del servicio', 'P03, P05, P06', 'Aprobados: mensaje comprensible, reintento y cancelación sin bloquear la interfaz'],
+              ['R8 Dependencias vulnerables', 'S01, S02', 'Aprobados: ningún paquete vulnerable ni obsoleto'],
+              ['R9 Pérdida del historial', 'P08, P09', 'Aprobados: eliminación con confirmación y persistencia tras reiniciar'],
+              ['R10 Cierre inesperado', 'Q03, Q04, prueba de estrés', 'Aprobados después de corregir F18 (respuestas largas) y F20 (APK)'],
+              ['R11 Límites de cuota', 'A08', 'Aprobado: error 429 con el mensaje del proveedor'],
+              ['R12 Latencia alta', 'P05, P06', 'Aprobados: tiempo máximo configurable y botón Cancelar'],
+              ['Calidad del producto', 'Q01, Q02, A12, F17', 'Aprobados: compilación limpia, interfaz adaptable y tema oscuro legible'],
+          ], [4.6, 4, 8.4]),
+          P('Los casos Q01, Q02 y S01–S05 se repiten con scripts/verificar-calidad.ps1 antes de cada entrega.'),
+          H1('8. Plan de seguimiento'),
           tabla(['Riesgo', 'Acción', 'Momento'], [
               ['R1', 'Repetir en la sustentación el ejemplo de marcar una respuesta como verificada y explicar por qué.', 'Sustentación'],
-              ['R3, R8', 'Ejecutar git grep de claves y dotnet list package --vulnerable / --deprecated.', 'Antes de cada entrega'],
+              ['R3, R8', 'Ejecutar scripts/verificar-calidad.ps1 (búsqueda de claves y dotnet list package --vulnerable / --deprecated).', 'Antes de cada entrega'],
               ['R4, R11', 'Actualizar la clave de Pollinations (la guardada en el equipo de pruebas ya no es válida) para tener un proveedor alternativo funcionando.', 'Antes de la entrega'],
               ['R10', 'Revisar errores.log después de las pruebas en Android y en la demostración.', 'Después de cada prueba'],
               ['R12', 'Dejar el tiempo máximo en 120 s por defecto.', 'Antes de la entrega'],
           ], [2.4, 11, 3.6]),
-          H1('8. Conclusiones'),
+          H1('9. Conclusiones'),
           *lista(['Los seis riesgos que exige la guía tienen un control implementado, ubicado en el código y verificado con evidencia.',
                   'Las pruebas automatizadas revelaron tres riesgos que no estaban en la matriz original (R10–R12). El más grave, el '
                   'cierre inesperado de la aplicación, quedó corregido y verificado.',

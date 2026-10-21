@@ -75,9 +75,19 @@ Formato de error de Google (comprobado con una clave falsa):
 
 ## Ejemplos de respuesta de error
 
-**Error 401 (Clave inválida o ausente):**
+**Error 401 (clave inválida o ausente, Pollinations):**
+
 ```json
 {"success":false,"error":{"message":"A valid API key is required. Get one at https://enter.pollinations.ai/keys","code":"UNAUTHORIZED","timestamp":"2026-10-15T23:32:18.366Z"},"status":401}
+```
+
+**Error 429 (cuota agotada, Google Gemini; mensaje abreviado):**
+
+```json
+{ "error": { "code": 429, "message": "You exceeded your current quota, please check your plan and billing details. …", "status": "RESOURCE_EXHAUSTED" } }
+```
+
+La app muestra: "Error 429: demasiadas solicitudes o cuota agotada… (Proveedor: You exceeded your current quota…)" (caso A08).
 
 ## Reintentos
 

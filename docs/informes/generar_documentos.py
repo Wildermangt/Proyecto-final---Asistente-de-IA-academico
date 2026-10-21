@@ -180,6 +180,15 @@ def codigo_de(rel, desde, hasta):
     return Preformatted('\n'.join(lineas), CODIGO, maxLineLength=118)
 
 
+def metodo_de(rel, firma):
+    """Extrae un método completo buscándolo por su firma, para que no dependa de números de línea."""
+    lineas = open(os.path.join(REPO, rel), encoding='utf-8-sig').read().splitlines()
+    inicio = next(i for i, l in enumerate(lineas) if firma in l)
+    sangria = lineas[inicio][:len(lineas[inicio]) - len(lineas[inicio].lstrip())]
+    fin = next(i for i in range(inicio + 1, len(lineas)) if lineas[i] == sangria + '}')
+    return Preformatted('\n'.join(lineas[inicio:fin + 1]), CODIGO, maxLineLength=118)
+
+
 def git_log():
     out = subprocess.run(['git', 'log', '--reverse', '--date=format:%d/%m/%Y %H:%M', '--format=%h|%ad|%an|%s'],
                          cwd=REPO, capture_output=True, text=True, encoding='utf-8').stdout
@@ -229,7 +238,8 @@ def doc_arquitectura():
           H1('Estructura del proyecto'),
           Preformatted('''AsistenteIA/
 ├─ Models/       ChatModels (JSON), ConversationRecord, PromptTemplate, AiProvider, Categories
-├─ Services/     AiService, ApiKeyService, SettingsService, DatabaseService, DialogService
+├─ Services/     AiService (+ AiService.Rules: reglas sin MAUI), ApiKeyService, SettingsService,
+│                DatabaseService, DialogService
 ├─ ViewModels/   Home, Chat (+ ChatExchange), History, Detail, Settings, Templates
 ├─ Views/        HomePage, ChatPage, HistoryPage, DetailPage, SettingsPage, TemplatesPage
 ├─ Controls/     MarkdownView (respuesta con formato)
@@ -237,7 +247,8 @@ def doc_arquitectura():
 ├─ Behaviors/    Animaciones accesibles (propiedades adjuntas)
 ├─ Resources/    Colors.xaml, Styles.xaml, fuentes, ícono y splash
 ├─ Platforms/    Código específico de Windows y Android
-└─ MauiProgram.cs  Registro de servicios, ViewModels y páginas (inyección de dependencias)''', CODIGO)]
+└─ MauiProgram.cs  Registro de servicios, ViewModels y páginas (inyección de dependencias)
+AsistenteIA.Tests/  Pruebas unitarias xUnit de las reglas de AiService (68 pruebas)''', CODIGO)]
     s += md(os.path.join(DOCS, '02-arquitectura.md'),
             diagramas=[('arquitectura-capas.png', 'Arquitectura en cinco componentes.', 17 * cm, 14 * cm),
                        ('diagrama-clases.png', 'Diagrama de clases (versión ampliada en el documento Diagrama de clases).', 17 * cm, 12 * cm)])
@@ -317,9 +328,9 @@ def doc_metodologia():
               ['3. Integración técnica', 'API REST, clave segura, MVVM, estados y errores', '3–7, 11',
                'Modelos JSON, ApiKeyService con SecureStorage, AiService con manejo de errores HTTP, ViewModels con estados y cancelación.'],
               ['4. Persistencia y calidad', 'SQLite CRUD, historial, diez pruebas y correcciones', '10, 12–13',
-               'DatabaseService con CRUD, historial con búsqueda y verificación, matriz de riesgos, pruebas P01–P10 y fallos F1–F20 corregidos.'],
+               'DatabaseService con CRUD, historial con búsqueda y verificación, matriz de riesgos, pruebas P01–P10, 68 pruebas unitarias (xUnit) y fallos F1–F20 corregidos.'],
               ['5. Entrega', 'Manual, video, informe, repositorio, APK o ejecutable y sustentación', '14',
-               'Manuales, informes en PDF, evidencias, video de funcionamiento (presentado en clase), ejecutable de Windows, APK 1.0 y sustentación individual (realizada en clase). Pendiente: commits de todos los integrantes.'],
+               'Manuales, informes en PDF, evidencias, video de funcionamiento (presentado en clase), ejecutable de Windows, APK 1.0, sustentación individual (realizada en clase) y commits de los tres integrantes desde sus cuentas.'],
           ], [3.2, 4.4, 1.4, 8]),
           H1('3. Roles del equipo (Fase 14)'),
           tabla(['Rol', 'Responsabilidades', 'Integrante'], [
@@ -339,7 +350,7 @@ def doc_metodologia():
           tabla(['Práctica', 'Aplicación en el proyecto'], [
               ['Control de versiones', 'Git con commits descriptivos por tipo (feat, fix, docs, build) y rama de trabajo feat/rediseno-interfaz para cambios grandes; main conserva la versión estable.'],
               ['Definición de terminado', 'Un incremento se consideró terminado cuando compila sin errores ni advertencias (Windows y Android), cumple su requisito y tiene evidencia (captura o registro).'],
-              ['Pruebas', 'Plan P01–P10 de la guía más pruebas adicionales, automatizadas con UI Automation de Windows usando el AutomationId de cada control; una captura por paso.'],
+              ['Pruebas', 'Plan P01–P10 de la guía más pruebas adicionales, automatizadas con UI Automation de Windows usando el AutomationId de cada control; una captura por paso. Pruebas unitarias xUnit (U01–U04) y script scripts/verificar-calidad.ps1 que repite las verificaciones automáticas.'],
               ['Gestión de fallos', 'Cada fallo encontrado se registra con su causa y corrección (F1–F20 en el plan de pruebas) y se vuelve a probar.'],
               ['Calidad y seguridad', 'Revisión de paquetes vulnerables y obsoletos, búsqueda de claves en el repositorio, HTTPS y contraste WCAG AA.'],
               ['Documentación viva', 'Los .md del repositorio son la fuente; los PDF se regeneran con scripts (docs/informes, docs/manuales).'],
@@ -352,6 +363,7 @@ def doc_metodologia():
               ['CommunityToolkit.Mvvm, sqlite-net-pcl', 'MVVM con generadores de código y persistencia local.'],
               ['Google Gemini / Pollinations', 'Proveedores de la API REST de IA.'],
               ['UI Automation (pywinauto)', 'Automatización de las pruebas de interfaz y toma de capturas.'],
+              ['xUnit', 'Pruebas unitarias de las reglas de AiService (proyecto AsistenteIA.Tests).'],
               ['Claude Code', 'Asistente de programación (declarado).'],
               ['ReportLab', 'Generación de los informes y manuales en PDF.'],
           ], [6, 11]),
@@ -359,9 +371,10 @@ def doc_metodologia():
           P(f'El repositorio registra {len(commits)} commits. Esta es la secuencia completa:'),
           tabla(['Commit', 'Fecha', 'Autor', 'Descripción'], [[c[0], c[1], c[2], c[3]] for c in commits], [1.6, 2.7, 3.4, 9.3]),
           Spacer(1, 6),
-          nota('<b>Pendiente para la entrega:</b> la guía exige commits de todos los integrantes. María Alejandra (alejandragoru) y '
-               'José Leandro (joseleandro544) ya son colaboradores del repositorio y aportan sus commits desde sus cuentas, '
-               'en las ramas feat/servicios-datos-mag y test/calidad-pruebas-jlo, mediante pull requests.'),
+          nota('<b>Aportes de todos los integrantes:</b> María Alejandra Gómez (servicios y datos: índice en CreatedAt, comentarios '
+               'XML en AiService y ejemplos de error en el consumo REST) y José Leandro Ocampo (calidad y pruebas: proyecto de '
+               'pruebas unitarias, criterios de aceptación, trazabilidad con la matriz de riesgos y script de verificación) '
+               'registraron sus commits desde sus propias cuentas, como muestra la tabla anterior.'),
           H1('7. Lecciones aprendidas'),
           *lista(['Las pruebas automatizadas con capturas encontraron un fallo grave (cierre de la app, F18) que no aparecía en el uso corto.',
                   'Depender de un plan gratuito de IA afecta las pruebas: latencia mayor a 60 s y límites de cuota. Conviene tener dos proveedores con clave válida.',
@@ -378,7 +391,7 @@ def doc_rest():
             'la respuesta, todos los códigos HTTP que maneja la app y cómo se protegen las credenciales.')]
     s += md(os.path.join(DOCS, '03-api-rest.md'))
     s += [H1('Implementación (AiService.SendChatAsync)'),
-          codigo_de('AsistenteIA/Services/AiService.cs', 152, 205),
+          metodo_de('AsistenteIA/Services/AiService.cs', 'Task<ChatResponse?> SendChatAsync('),
           H1('Evidencias'),
           figs_lado([('P01a-consultando.png', 'POST en curso (estado de carga).'), ('P01b-respuesta-recibida.png', '200: respuesta recibida.')]),
           figs_lado([('P04c-probar-conexion-401.png', '401: clave inválida.'), ('P03a-sin-conexion-mensaje.png', 'Sin conexión.')]),
@@ -399,6 +412,7 @@ def doc_sqlite():
   Prompt TEXT, Answer TEXT, CreatedAt BIGINT,
   Category TEXT, IsVerified INTEGER, Model TEXT
 );
+CREATE INDEX ConversationRecord_CreatedAt ON ConversationRecord(CreatedAt);
 CREATE INDEX ConversationRecord_Category ON ConversationRecord(Category);
 
 CREATE TABLE PromptTemplate (
@@ -407,8 +421,8 @@ CREATE TABLE PromptTemplate (
 );''', CODIGO),
           tabla(['Elemento', 'Detalle'], [
               ['Ubicación', 'FileSystem.AppDataDirectory/asistenteia.db3 (en Windows sin empaquetar: %LOCALAPPDATA%\\User Name\\co.edu.usb.asistenteia\\Data).'],
-              ['Inicialización', 'Perezosa y segura entre hilos (SemaphoreSlim) en el primer acceso: crea tablas, índice y seis plantillas iniciales.'],
-              ['Entidad', 'ConversationRecord (Models/ConversationRecord.cs) con [PrimaryKey, AutoIncrement] e [Indexed] en Category.'],
+              ['Inicialización', 'Perezosa y segura entre hilos (SemaphoreSlim) en el primer acceso: crea tablas, índices y seis plantillas iniciales.'],
+              ['Entidad', 'ConversationRecord (Models/ConversationRecord.cs) con [PrimaryKey, AutoIncrement] e [Indexed] en CreatedAt (orden del historial) y Category (filtro).'],
           ], [3.5, 13.5]),
           H1('3. Código de las operaciones (DatabaseService)'),
           codigo_de('AsistenteIA/Services/DatabaseService.cs', 44, 76),
@@ -501,6 +515,8 @@ def doc_manual_tecnico():
           Preformatted('''Proyecto final/
 ├─ AsistenteIA.slnx             Solución de Visual Studio
 ├─ AsistenteIA/                 Proyecto .NET MAUI (Models, Services, ViewModels, Views, Controls, ...)
+├─ AsistenteIA.Tests/           Pruebas unitarias xUnit (dotnet test AsistenteIA.Tests)
+├─ scripts/verificar-calidad.ps1  Verificaciones automáticas de calidad y seguridad
 ├─ docs/                        Requisitos, arquitectura, API, riesgos, pruebas, manuales
 │  ├─ evidencias/v2/            Capturas de la versión actual
 │  ├─ informes/                 Informes en PDF y sus generadores
