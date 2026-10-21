@@ -11,7 +11,7 @@ public class ConversationRecord
     public string Prompt { get; set; } = string.Empty;
 
     public string Answer { get; set; } = string.Empty;
-
+    [Indexed]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [Indexed]
