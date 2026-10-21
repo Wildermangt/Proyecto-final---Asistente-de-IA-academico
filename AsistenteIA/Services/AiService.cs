@@ -30,7 +30,11 @@ public class AiService
         _connectivity = connectivity;
     }
 
-    // RF02: también se usa desde el ViewModel para no enviar solicitudes inválidas.
+    /// <summary>
+    /// Valida que la consulta no esté vacía y cumpla con la longitud requerida (entre 5 y 2000 caracteres).
+    /// </summary>
+    /// <param name="prompt">Texto de la consulta ingresada por el usuario.</param>
+    /// <returns>Mensaje descriptivo del error de validación, o null si la consulta es válida.</returns>
     public static string? ValidatePrompt(string? prompt)
     {
         string clean = prompt?.Trim() ?? string.Empty;
@@ -43,6 +47,14 @@ public class AiService
         return null;
     }
 
+    /// <summary>
+    /// Envía la consulta al proveedor configurado mediante POST /chat/completions y devuelve la respuesta en Markdown.
+    /// </summary>
+    /// <param name="prompt">Consulta del usuario (entre 5 y 2000 caracteres).</param>
+    /// <param name="model">Identificador del modelo elegido en Configuración.</param>
+    /// <param name="userToken">Token de cancelación que se activa cuando el usuario pulsa Cancelar.</param>
+    /// <returns>Respuesta textual devuelta por el modelo de IA.</returns>
+    /// <exception cref="AiServiceException">Validación, red, tiempo agotado o error HTTP (401, 402, 429, 5xx) con su AiErrorKind correspondiente.</exception>
     public async Task<string> AskAsync(string prompt, string model, CancellationToken userToken = default)
     {
         string? validationError = ValidatePrompt(prompt);
@@ -68,7 +80,11 @@ public class AiService
             : answer.Trim();
     }
 
-    // Texto sin símbolos Markdown (#, **, ---, viñetas a •) para copiar, compartir y vistas previas.
+    /// <summary>
+    /// Convierte texto en formato Markdown a texto plano limpio (remueve encabezados, negritas y convierte viñetas) para copiar, compartir y vistas previas.
+    /// </summary>
+    /// <param name="text">Texto original que contiene formato Markdown.</param>
+    /// <returns>Cadena de texto sin formato Markdown.</returns>
     public static string PlainText(string text)
     {
         var lines = text.Replace("\r\n", "\n").Split('\n');
@@ -92,7 +108,12 @@ public class AiService
         return System.Text.RegularExpressions.Regex.Replace(result, "\n{3,}", "\n\n").Trim();
     }
 
-    // Consulta breve para el botón "Probar conexión".
+    /// <summary>
+    /// Realiza una consulta mínima mediante POST /chat/completions para verificar la conectividad con el proveedor y la validez de la clave de API.
+    /// </summary>
+    /// <param name="token">Token de cancelación opcional (CancellationToken).</param>
+    /// <returns>Respuesta textual devuelta por el servicio de prueba.</returns>
+    /// <exception cref="AiServiceException">Lanzada cuando la clave es inválida, hay error de red o tiempo de espera agotado con su AiErrorKind.</exception>
     public async Task<string> TestConnectionAsync(CancellationToken token = default)
     {
         var body = new ChatRequest
@@ -104,7 +125,12 @@ public class AiService
         return result?.Choices.FirstOrDefault()?.Message.Content?.Trim() ?? "(sin contenido)";
     }
 
-    // Catálogo de modelos de texto del proveedor activo; si falla, se usa la lista local del proveedor.
+    /// <summary>
+    /// Consulta el catálogo de modelos de texto disponibles del proveedor activo mediante una petición HTTP GET al endpoint /models.
+    /// Si ocurre una excepción de red o formato, devuelve la lista de respaldo local (FallbackModels).
+    /// </summary>
+    /// <param name="token">Token de cancelación (CancellationToken) para abortar la solicitud.</param>
+    /// <returns>Lista de identificadores de modelos de texto soportados.</returns>
     public async Task<IReadOnlyList<string>> GetModelsAsync(CancellationToken token = default)
     {
         AiProvider provider = _settings.Provider;
