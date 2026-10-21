@@ -55,6 +55,29 @@ Se repitieron todas las pruebas sobre la versión con el rediseño de interfaz (
 | S05 | URL de servicios | Solo HTTPS | [S05](evidencias/v2/S05-solo-https.png) |
 | S06 | SecureStorage, `IsPassword`, registros | Clave cifrada, campo oculto y nunca escrita en consola | [S06](evidencias/v2/S06-clave-protegida.png) |
 
+#### Criterios de aceptación de calidad
+
+Un caso se aprueba solo si cumple su criterio; si no, se registra como fallo (F#), se corrige y se repite.
+
+| Caso | Criterio de aceptación | Forma de verificarlo |
+|---|---|---|
+| Q01 | Compilación para Windows con 0 errores y 0 advertencias | Automática |
+| Q02 | Compilación para Android con 0 errores (se aceptan las advertencias XA del SQLite nativo) | Automática |
+| Q03 | El APK Release abre en el emulador y muestra el resumen del historial sin cerrarse | Manual, con captura |
+| Q04 | El ejecutable Release autocontenido abre en un equipo sin .NET instalado y lee el historial | Manual, con captura |
+| A12 | En 400, 820 y 1400 px ningún control queda recortado ni solapado | Manual, con capturas |
+| F17 | Textos y avisos legibles en tema oscuro; contraste ≥ 4,5:1 (WCAG AA) | Manual, con capturas |
+| Estrés | Tres consultas largas seguidas sin cierre y `errores.log` vacío | Manual |
+| S01–S05 | Sin paquetes vulnerables ni obsoletos, sin claves reales, sin `bin/`/`obj/` versionados y solo URL HTTPS | Automática |
+
+Los casos automáticos se repiten con un solo comando desde la raíz del repositorio (Windows, .NET 10 y MAUI):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verificar-calidad.ps1
+```
+
+El script muestra un resumen por caso y termina con código 1 si alguno falla. Con `-OmitirAndroid` se salta Q02 en equipos sin el SDK de Android.
+
 ## Ejecución 1: primera versión (15 y 16/10/2026)
 
 ### Casos obligatorios P01–P10
